@@ -1,0 +1,89 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    @apply bg-dark-400 text-white font-body;
+  }
+  
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-dark-300;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-primary-600 rounded-full;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-primary-500;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-gradient-to-r from-primary-600 to-neon-orange px-8 py-4 rounded-lg font-heading font-semibold text-lg uppercase tracking-wider transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-primary-600/50 active:scale-95;
+  }
+  
+  .btn-secondary {
+    @apply border-2 border-primary-500 px-8 py-4 rounded-lg font-heading font-semibold text-lg uppercase tracking-wider transition-all duration-300 hover:bg-primary-500 hover:scale-105 active:scale-95;
+  }
+  
+  .card-dark {
+    @apply bg-dark-200 rounded-2xl border border-dark-100 hover:border-primary-600/50 transition-all duration-300;
+  }
+  
+  .input-dark {
+    @apply w-full bg-dark-300 border border-dark-100 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all duration-300;
+  }
+  
+  .section-title {
+    @apply font-heading text-4xl md:text-5xl lg:text-6xl font-bold uppercase tracking-tight;
+  }
+  
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary-400 to-neon-orange bg-clip-text text-transparent;
+  }
+  
+  .glass-effect {
+    @apply bg-white/5 backdrop-blur-lg border border-white/10;
+  }
+}
+
+@layer utilities {
+  .text-shadow {
+    text-shadow: 0 0 40px rgba(249,115,22,0.5);
+  }
+  
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+/* Add this to src/index.css for the modal animation */
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-scale-in {
+  animation: scale-in 0.2s ease-out;
+}

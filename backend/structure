@@ -1,0 +1,24 @@
+backend/
+├── config/
+│   └── cloudinary.js       # Cloudinary storage configuration
+├── controllers/
+│   ├── AuthController.js   # Login, Logout, Password Change logic
+│   └── AdminController.js  # Add Member, Get All Members logic
+│   └── MemberController.js # Get Profile logic
+├── middleware/
+│   ├── verifyToken.js      # Decodes JWT from cookie
+│   ├── verifyAdmin.js      # Ensures user is Admin
+│   ├── rateLimiter.js      # Limits repeated requests
+│   └── security.js         # General security headers
+├── model/
+│   └── Member.js           # Mongoose Schema
+├── routes/
+│   ├── authRoutes.js       # Login/Logout routes
+│   ├── adminRoutes.js      # Admin protected routes
+│   └── memberRoutes.js     # Member protected routes
+├── utils/
+│   └── helpers.js          # Validators, Admin Check, Date calculations
+├── app.js                  # Express App configuration
+├── server.js               # Server entry point
+├── package.json            # Dependencies
+└── .env                    # Environment Variables
