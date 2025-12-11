@@ -121,27 +121,7 @@ const MemberProfile = () => {
                                 </div>
                             )}
 
-                            {/* Amount Paid */}
-                            <div className="flex items-center gap-4 p-4 rounded-xl bg-dark-200">
-                                <div className="w-10 h-10 rounded-lg bg-yellow-600/20 flex items-center justify-center">
-                                    <DollarSign size={18} className="text-yellow-500" />
-                                </div>
-                                <div>
-                                    <p className="text-gray-400 text-sm">Amount Paid</p>
-                                    <p className="text-white font-medium">₹{memberProfile.amount_paid || '0'}</p>
-                                </div>
-                            </div>
-
-                            {/* Discount */}
-                            <div className="flex items-center gap-4 p-4 rounded-xl bg-dark-200">
-                                <div className="w-10 h-10 rounded-lg bg-pink-600/20 flex items-center justify-center">
-                                    <DollarSign size={18} className="text-pink-500" />
-                                </div>
-                                <div>
-                                    <p className="text-gray-400 text-sm">Discount</p>
-                                    <p className="text-white font-medium">₹{memberProfile.discount || '0'}</p>
-                                </div>
-                            </div>
+                            
 
                             {/* Focus Note */}
                             {memberProfile.focus_note && (

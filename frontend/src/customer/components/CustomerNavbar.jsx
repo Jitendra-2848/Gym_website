@@ -9,34 +9,33 @@ import {
   UserCircle,
   Menu,
   X,
-  Dumbbell,
+  Home,
+  Info,
+  Phone,
 } from "lucide-react";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-
   const profileMenuRef = useRef(null);
   const location = useLocation();
   const navigate = useNavigate();
-
+  
   const user = Store((state) => state.user);
+  console.log(user)
   const logout = Store((state) => state.logout);
 
-  const navLinks = [
-    { name: "Home", path: "/" },
-    { name: "About", path: "/about" },
-    { name: "Contact", path: "/contact" },
-  ];
+  const isLoggedIn = user && user.role;
+  const isAdmin = user?.role === "admin";
 
-    useEffect(() => {
-        const handleScroll = () => {
-            setScrolled(window.scrollY > 20)
-        }
-        window.addEventListener('scroll', handleScroll)
-        return () => window.removeEventListener('scroll', handleScroll)
-    }, [])
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   useEffect(() => {
     setIsOpen(false);
@@ -45,10 +44,7 @@ const Navbar = () => {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (
-        profileMenuRef.current &&
-        !profileMenuRef.current.contains(event.target)
-      ) {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
         setShowProfileMenu(false);
       }
     };
@@ -62,82 +58,96 @@ const Navbar = () => {
     navigate("/login");
   };
 
-  const isActivePath = (path) => {
-    return path === "/"
-      ? location.pathname === "/"
-      : location.pathname.startsWith(path);
+  const isActive = (path) => {
+    if (path === "/") {
+      return location.pathname === "/";
+    }
+    return location.pathname.startsWith(path);
   };
 
-    return (
-        <>
-            <nav className={`fixed w-full z-50 transition-all duration-300 ${
-                scrolled 
-                    ? 'bg-dark-400/95 backdrop-blur-xl shadow-lg py-2' 
-                    : 'bg-transparent py-4'
-            }`}>
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center justify-between h-16">
+  return (
+    <>
+      {/* ============ TOP NAVBAR ============ */}
+      <nav
+        className={`fixed w-full z-50 transition-all duration-300 ${
+          scrolled
+            ? "bg-dark-400/95 backdrop-blur-xl shadow-lg py-2"
+            : "bg-transparent py-4"
+        }`}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
 
-                        <Link to="/" className="flex items-center gap-2">
-                            <span className="font-heading text-2xl font-bold text-white">
-                                FIT<span className="text-primary-500">GYM</span>
-                            </span>
-                        </Link>
+            {/* Logo */}
+            <Link to="/" className="flex items-center gap-2">
+              <span className="font-heading text-2xl font-bold text-white">
+                FIT<span className="text-primary-500">GYM</span>
+              </span>
+            </Link>
 
+            {/* Desktop Menu */}
             <div className="hidden md:flex items-center gap-8">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  to={link.path}
-                  className={`text-sm font-medium transition-colors duration-200 ${
-                    isActivePath(link.path)
-                      ? "text-primary-400"
-                      : "text-gray-300 hover:text-white"
-                  }`}
-                >
-                  {link.name}
-                </Link>
-              ))}
+              <Link
+                to="/"
+                className={`text-sm font-medium ${
+                  isActive("/") ? "text-primary-400" : "text-gray-300 hover:text-white"
+                }`}
+              >
+                Home
+              </Link>
+              <Link
+                to="/about"
+                className={`text-sm font-medium ${
+                  isActive("/about") ? "text-primary-400" : "text-gray-300 hover:text-white"
+                }`}
+              >
+                About
+              </Link>
+              <Link
+                to="/contact"
+                className={`text-sm font-medium ${
+                  isActive("/contact") ? "text-primary-400" : "text-gray-300 hover:text-white"
+                }`}
+              >
+                Contact
+              </Link>
             </div>
 
-                        <div className="hidden md:block">
-                            {user && user.role ? (
-                                <div className="relative" ref={profileMenuRef}>
-                                    <button
-                                        onClick={() => setShowProfileMenu(!showProfileMenu)}
-                                        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-dark-300 hover:bg-dark-200 transition-colors"
-                                    >
-                                        <div className="w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center">
-                                            <User size={16} className="text-white" />
-                                        </div>
-                                        <span className="text-sm font-medium text-white capitalize">
-                                            {user.role}
-                                        </span>
-                                        <ChevronDown 
-                                            size={16} 
-                                            className={`text-gray-400 transition-transform duration-200 ${
-                                                showProfileMenu ? 'rotate-180' : ''
-                                            }`} 
-                                        />
-                                    </button>
+            {/* Desktop Profile / Login */}
+            <div className="hidden md:block">
+              {isLoggedIn ? (
+                <div className="relative" ref={profileMenuRef}>
+                  <button
+                    onClick={() => setShowProfileMenu(!showProfileMenu)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg bg-dark-300 hover:bg-dark-200"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center">
+                      <User size={16} className="text-white" />
+                    </div>
+                    <span className="text-sm font-medium text-white capitalize">
+                      {user.role}
+                    </span>
+                    <ChevronDown
+                      size={16}
+                      className={`text-gray-400 ${showProfileMenu ? "rotate-180" : ""}`}
+                    />
+                  </button>
 
                   {showProfileMenu && (
-                    <div className="absolute right-0 mt-2 w-48 bg-dark-300 rounded-xl border border-dark-100 shadow-xl overflow-hidden">
+                    <div className="absolute right-0 mt-2 w-48 bg-dark-300 rounded-xl border border-dark-100 shadow-xl">
                       <div className="p-3 border-b border-dark-100">
-                        <p className="text-white font-medium capitalize">
-                          {user.role}
-                        </p>
+                        <p className="text-white font-medium capitalize">{user.role}</p>
                         <p className="text-xs text-gray-400">
-                          {user.role === "admin" ? "Administrator" : "Member"}
+                          {isAdmin ? "Administrator" : "Member"}
                         </p>
                       </div>
 
                       <div className="p-2">
-                        {user.role === "admin" ? (
+                        {isAdmin ? (
                           <Link
                             to="/admin"
                             onClick={() => setShowProfileMenu(false)}
-                            className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-300 hover:bg-dark-200 hover:text-white transition-colors"
+                            className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-300 hover:bg-dark-200"
                           >
                             <LayoutDashboard size={18} />
                             <span>Dashboard</span>
@@ -146,7 +156,7 @@ const Navbar = () => {
                           <Link
                             to="/profile"
                             onClick={() => setShowProfileMenu(false)}
-                            className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-300 hover:bg-dark-200 hover:text-white transition-colors"
+                            className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-300 hover:bg-dark-200"
                           >
                             <UserCircle size={18} />
                             <span>My Profile</span>
@@ -155,7 +165,7 @@ const Navbar = () => {
 
                         <button
                           onClick={handleLogout}
-                          className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-red-400 hover:bg-red-500/10 transition-colors"
+                          className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-red-400 hover:bg-red-500/10"
                         >
                           <LogOut size={18} />
                           <span>Logout</span>
@@ -168,13 +178,13 @@ const Navbar = () => {
                 <div className="flex items-center gap-3">
                   <Link
                     to="/login"
-                    className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors"
+                    className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white"
                   >
                     Sign In
                   </Link>
                   <Link
                     to="/contact"
-                    className="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-primary-600 hover:bg-primary-500 transition-colors"
+                    className="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-primary-600 hover:bg-primary-500"
                   >
                     Join Now
                   </Link>
@@ -182,6 +192,7 @@ const Navbar = () => {
               )}
             </div>
 
+            {/* Mobile Menu Button */}
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="md:hidden p-2 rounded-lg text-white"
@@ -191,89 +202,90 @@ const Navbar = () => {
           </div>
         </div>
 
+        {/* Mobile Dropdown Menu */}
         {isOpen && (
           <div className="md:hidden bg-dark-300 mx-4 mt-2 p-4 rounded-xl border border-dark-100">
-            <div className="space-y-1 mb-4">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  to={link.path}
-                  className={`block px-4 py-3 rounded-lg font-medium transition-colors ${
-                    isActivePath(link.path)
-                      ? "bg-primary-600 text-white"
-                      : "text-gray-300 hover:bg-dark-200"
-                  }`}
-                >
-                  {link.name}
-                </Link>
-              ))}
-            </div>
+            
+            {/* Links */}
+            <Link
+              to="/"
+              className={`block px-4 py-3 rounded-lg font-medium mb-1 ${
+                isActive("/") ? "bg-primary-600 text-white" : "text-gray-300 hover:bg-dark-200"
+              }`}
+            >
+              Home
+            </Link>
+            <Link
+              to="/about"
+              className={`block px-4 py-3 rounded-lg font-medium mb-1 ${
+                isActive("/about") ? "bg-primary-600 text-white" : "text-gray-300 hover:bg-dark-200"
+              }`}
+            >
+              About
+            </Link>
+            <Link
+              to="/contact"
+              className={`block px-4 py-3 rounded-lg font-medium ${
+                isActive("/contact") ? "bg-primary-600 text-white" : "text-gray-300 hover:bg-dark-200"
+              }`}
+            >
+              Contact
+            </Link>
 
-            <div className="h-px bg-gradient-to-r from-transparent via-dark-100 to-transparent my-4"></div>
+            <div className="h-px bg-dark-100 my-4"></div>
 
-            {user && user.role ? (
-              <div className="space-y-2">
-                <div className="flex items-center gap-3 px-4 py-3 bg-dark-200/50 rounded-xl mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center">
+            {/* Profile Section */}
+            {isLoggedIn ? (
+              <div>
+                <div className="flex items-center gap-3 px-4 py-3 bg-dark-200/50 rounded-xl mb-3">
+                  <div className="w-10 h-10 rounded-full bg-primary-600 flex items-center justify-center">
                     <User size={20} className="text-white" />
                   </div>
                   <div>
-                    <p className="text-white font-medium capitalize">
-                      {user.role} User
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {user.role === "admin" ? "Administrator" : "Member"}
+                    <p className="text-white font-medium capitalize">{user.role}</p>
+                    <p className="text-xs text-gray-400">
+                      {isAdmin ? "Administrator" : "Member"}
                     </p>
                   </div>
                 </div>
 
-                {user.role === "admin" && (
+                {isAdmin ? (
                   <Link
                     to="/admin"
-                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-dark-200 transition-all"
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-dark-200"
                   >
                     <LayoutDashboard size={20} className="text-primary-400" />
                     <span>Dashboard</span>
                   </Link>
+                ) : (
+                  <Link
+                    to="/profile"
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-dark-200"
+                  >
+                    <UserCircle size={20} className="text-primary-400" />
+                    <span>My Profile</span>
+                  </Link>
                 )}
-
-                                {user.role === 'member' && (
-                                    <Link
-                                        to="/profile"
-                                        className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-dark-200 transition-all"
-                                    >
-                                        <UserCircle size={20} className="text-primary-400" />
-                                        <span>My Profile</span>
-                                    </Link>
-                                )}
-                                {/* we have to make the setting page so user cna also chnage its detail like photo name */}
-                                {/* <Link
-                                    to="/settings"
-                                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-dark-200 transition-all"
-                                >
-                                    <Settings size={20} className="text-gray-400" />
-                                    <span>Settings</span>
-                                </Link> */}
 
                 <button
                   onClick={handleLogout}
-                  className="flex items-center gap-3 w-full px-4 py-3 mt-2 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all"
+                  className="flex items-center gap-3 w-full px-4 py-3 mt-2 rounded-xl bg-red-500/10 text-red-400"
                 >
                   <LogOut size={20} />
                   <span>Logout</span>
                 </button>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 <Link
                   to="/login"
-                  className="block w-full px-4 py-3 rounded-xl text-center font-medium text-gray-300 bg-dark-200 hover:bg-dark-100 transition-all"
+                  className="block w-full px-4 py-3 rounded-xl text-center text-gray-300 bg-dark-200"
                 >
                   Sign In
                 </Link>
                 <Link
                   to="/contact"
-                  className="block w-full px-4 py-3 rounded-xl text-center font-semibold text-white bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-neon-orange transition-all shadow-lg shadow-primary-600/20"
+                  className="block w-full px-4 py-3 rounded-xl text-center text-white bg-primary-600"
                 >
                   Join Now
                 </Link>
@@ -283,14 +295,106 @@ const Navbar = () => {
         )}
       </nav>
 
+      {/* Mobile Menu Overlay */}
       {isOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 md:hidden"
           onClick={() => setIsOpen(false)}
         />
       )}
+
+      {/* ============ BOTTOM NAVIGATION (Mobile Only) ============ */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-dark-400 border-t border-dark-100">
+        <div className="flex items-center justify-around py-2 px-4">
+
+          {/* Home */}
+          <Link to="/" className="flex flex-col items-center py-2 px-3">
+            <Home
+              size={22}
+              className={isActive("/") ? "text-primary-400" : "text-gray-400"}
+            />
+            <span
+              className={`text-xs mt-1 ${
+                isActive("/") ? "text-primary-400" : "text-gray-400"
+              }`}
+            >
+              Home
+            </span>
+          </Link>
+
+          {/* About */}
+          <Link to="/about" className="flex flex-col items-center py-2 px-3">
+            <Info
+              size={22}
+              className={isActive("/about") ? "text-primary-400" : "text-gray-400"}
+            />
+            <span
+              className={`text-xs mt-1 ${
+                isActive("/about") ? "text-primary-400" : "text-gray-400"
+              }`}
+            >
+              About
+            </span>
+          </Link>
+
+          {/* Contact */}
+          <Link to="/contact" className="flex flex-col items-center py-2 px-3">
+            <Phone
+              size={22}
+              className={isActive("/contact") ? "text-primary-400" : "text-gray-400"}
+            />
+            <span
+              className={`text-xs mt-1 ${
+                isActive("/contact") ? "text-primary-400" : "text-gray-400"
+              }`}
+            >
+              Contact
+            </span>
+          </Link>
+
+          {/* Profile or Login */}
+          {isLoggedIn ? (
+            <Link
+              to={isAdmin ? "/admin" : "/profile"}
+              className="flex flex-col items-center py-2 px-3"
+            >
+              <User
+                size={22}
+                className={
+                  isActive("/profile") || isActive("/admin")
+                    ? "text-primary-400"
+                    : "text-gray-400"
+                }
+              />
+              <span
+                className={`text-xs mt-1 ${
+                  isActive("/profile") || isActive("/admin")
+                    ? "text-primary-400"
+                    : "text-gray-400"
+                }`}
+              >
+                {isAdmin ? "Admin" : "Profile"}
+              </span>
+            </Link>
+          ) : (
+            <Link to="/login" className="flex flex-col items-center py-2 px-3">
+              <User
+                size={22}
+                className={isActive("/login") ? "text-primary-400" : "text-gray-400"}
+              />
+              <span
+                className={`text-xs mt-1 ${
+                  isActive("/login") ? "text-primary-400" : "text-gray-400"
+                }`}
+              >
+                Login
+              </span>
+            </Link>
+          )}
+        </div>
+      </div>
     </>
   );
 };
 
-export default Navbar
+export default Navbar;

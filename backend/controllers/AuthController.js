@@ -13,29 +13,82 @@ const cookieOpts = {
 const login = async (req, res) => {
     try {
         const { mobile, password } = req.body;
-        if (!mobile || !password) return res.status(400).json({ success: false, message: 'Credentials required' });
-        const adminData = checkAdmin(mobile, password);
+
+        if (!mobile || !password) {
+            return res.status(400).json({
+                success: false,
+                message: 'Credentials required'
+            });
+        }
+        const adminData = await checkAdmin(mobile, password);
+
         if (adminData.is) {
-            const token = await jwt.sign({ mobile, role: 'admin', id: adminData.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+            const token = jwt.sign(
+                {
+                    hash: adminData.hash,
+                    role: 'admin'
+                },
+                process.env.JWT_SECRET,
+                { expiresIn: '7d' }
+            );
             res.cookie('token', token, cookieOpts);
-            return res.status(200).json({ success: true, role: 'admin', message: 'Admin Login' });
+            return res.status(200).json({
+                success: true,
+                role: 'admin',
+                message: 'Admin Login'
+            });
         }
         const member = await Member.findOne({ mobile });
-        if (!member) return res.status(401).json({ success: false, message: 'Invalid credentials' });
-        const isMatch = await bcrypt.compare(password, member.password);
-        if (!isMatch) return res.status(401).json({ success: false, message: 'Invalid credentials' });
-        if (member.isFirstLogin) {
-            //here i have to delete this line okay
-            const token = await jwt.sign({ id: member._id, role: 'member' }, process.env.JWT_SECRET, { expiresIn: '7d' });
-            res.cookie('token', token, cookieOpts);
-            return res.status(200).json({ success: true, role: 'member', isFirstLogin: true, mobile: member.mobile,token:token });
+
+        if (!member) {
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid credentials'
+            });
         }
-        const token = jwt.sign({ id: member._id, role: 'member' }, process.env.JWT_SECRET, { expiresIn: '7d' });
+
+        const isMatch = await bcrypt.compare(password, member.password);
+
+        if (!isMatch) {
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid credentials'
+            });
+        }
+
+        const token = jwt.sign(
+            {
+                id: member._id,
+                role: 'member'
+            },
+            process.env.JWT_SECRET,
+            { expiresIn: '7d' }
+        );
+
         res.cookie('token', token, cookieOpts);
-        return res.status(200).json({ success: true, role: 'member', isFirstLogin: false, message: 'Member Login' });
+
+        if (member.isFirstLogin) {
+            return res.status(200).json({
+                success: true,
+                role: 'member',
+                isFirstLogin: true,
+                mobile: member.mobile
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            role: 'member',
+            isFirstLogin: false,
+            message: 'Member Login'
+        });
+
     } catch (e) {
-        console.log(e)
-        res.status(500).json({ success: false, message: 'Server Error' });
+        console.log(e);
+        res.status(500).json({
+            success: false,
+            message: 'Server Error'
+        });
     }
 };
 
@@ -62,12 +115,58 @@ const logout = (req, res) => {
     res.clearCookie('token', cookieOpts);
     res.status(200).json({ success: true, message: 'Logged out' });
 };
-const check = (req,res)=>{
-    // try {   
-    //     const 
-    // } catch (error) {
-    //     console.log(error.message);
-    // }
-}
+const check = async (req, res) => {
+    try {
+        if (!req.user) {
+            return res.json({ user: null });
+        }
+        console.log(req.user);
+        if (req.user.role === 'admin') {
+            const isValidAdmin = await bcrypt.compare(
+                process.env.ADMIN1_PASSWORD,
+                req.user.hash
+            );
+            const isValidAdmin2 = await bcrypt.compare(
+                process.env.ADMIN2_PASSWORD,
+                req.user.hash
+            );
+            
+
+            if (isValidAdmin || isValidAdmin2) {
+                return res.json({
+                    user: {
+                        // name: process.env.ADMIN_NAME,
+                        mobile: process.env.ADMIN1_MOBILE,
+                        role: 'admin'
+                    }
+                });
+            }
+
+            return res.json({ user: null });
+        }
+        if (req.user.role === 'member') {
+            const user = await Member.findById(req.user.id)
+                .select("-password -createdBy -createdAt -amount_paid -discount -_id -updatedAt -__v")
+                .lean();
+
+            if (!user) {
+                return res.json({ user: null });
+            }
+
+            return res.json({
+                user: {
+                    ...user,
+                    role: 'member'
+                }
+            });
+        }
+
+        return res.json({ user: null });
+
+    } catch (error) {
+        console.log("Check error:", error.message);
+        return res.json({ user: null });
+    }
+};
 module.exports = { login, setFirstPassword, logout ,check};
 

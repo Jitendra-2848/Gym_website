@@ -1,103 +1,123 @@
-import { create } from "zustand"
-import { api } from "./axios"
+import { create } from "zustand";
+import { api } from "./axios";
 
-export const Store = create((set) => ({
-    user: null,
-    isAuthenticated: false,
-    isLogging: false,
-    errorMessage: null,
+export const Store = create((set, get) => ({
+  checking: true,
+  user: null,
+  isAuthenticated: false,
+  isLogging: false,
+  errorMessage: null,
+  memberProfile: null,
+  profileLoading: false,
 
-    login: async (credentials) => {
-        set({ isLogging: true, errorMessage: null })
+  checkAuth: async () => {
+    set({ checking: true });
+    try {
+      const res = await api.get("/api/auth/check");
+      const userData = res.data.user || null;    
+      console.log(userData);
+      if (userData) {
+        set({
+          user: {
+            ...userData,
+            role: userData.role || "member"
+          },
+          isAuthenticated: true,
+          checking: false
+        });
+      } else {
+        set({
+          user: null,
+          isAuthenticated: false,
+          checking: false
+        });
+      }
+    } catch (error) {
+      console.error("Auth check error:", error);
+      set({
+        user: null,
+        isAuthenticated: false,
+        checking: false
+      });
+    }
+  },
 
-        try {
-            const response = await api.post("/api/auth/login", credentials)
-            const data = response.data
+  login: async (credentials) => {
+    set({ isLogging: true, errorMessage: null });
 
-            if (data.success === true) {
-                set({
-                    user: {
-                        role: data.role,
-                        isFirstLogin: data.isFirstLogin,
-                        mobile: data.mobile || null
-                    },
-                    isAuthenticated: true,
-                    isLogging: false,
-                    errorMessage: null
-                })
+    try {
+      const response = await api.post("/api/auth/login", credentials);
+      const data = response.data;
 
-                return {
-                    success: true,
-                    role: data.role,
-                    isFirstLogin: data.isFirstLogin,
-                    mobile: data.mobile || null
-                }
-            } else {
-                set({
-                    user: null,
-                    isAuthenticated: false,
-                    isLogging: false,
-                    errorMessage: data.message || "Invalid credentials"
-                })
-
-                return { 
-                    success: false, 
-                    message: data.message || "Invalid credentials" 
-                }
-            }
-        } catch (error) {
-            const errorMsg = error.response?.data?.message || "Something went wrong. Please try again."
-            
-            set({
-                user: null,
-                isAuthenticated: false,
-                isLogging: false,
-                errorMessage: errorMsg
-            })
-
-            return { 
-                success: false, 
-                message: errorMsg 
-            }
-        }
-    },
-
-    logout: async () => {
-        try {
-            await api.post("/api/auth/logout")
-        } catch (error) {
-            console.log("Logout error:", error)
-        }
+      if (data.success) {
+        const user = {
+          role: data.role || "member",
+          isFirstLogin: data.isFirstLogin || false,
+          mobile: data.mobile || credentials.mobile,
+          name: data.name || ""
+        };
 
         set({
-            user: null,
-            isAuthenticated: false,
-            errorMessage: null
-        })
-    },
+          user,
+          isAuthenticated: true,
+          isLogging: false,
+          errorMessage: null
+        });
 
-    clearError: () => {
-        set({ errorMessage: null })
-    },
+        return { success: true, user };
+      } else {
+        set({
+          user: null,
+          isAuthenticated: false,
+          isLogging: false,
+          errorMessage: data.message || "Invalid credentials"
+        });
 
-    memberProfile: null,
-    profileLoading: false,
-
-    getMemberProfile: async () => {
-        set({ profileLoading: true })
-        try {
-            const response = await api.get('/api/member/profile')
-            if (response.data && response.data.success) {
-                set({ memberProfile: response.data.data, profileLoading: false })
-                return response.data.data
-            } else {
-                set({ profileLoading: false })
-                return null
-            }
-        } catch (error) {
-            console.log('Profile fetch error:', error)
-            set({ profileLoading: false })
-            return null
-        }
+        return { success: false, message: data.message };
+      }
+    } catch (error) {
+      const errorMsg = error.response?.data?.message || "Something went wrong";
+      set({
+        user: null,
+        isAuthenticated: false,
+        isLogging: false,
+        errorMessage: errorMsg
+      });
+      return { success: false, message: errorMsg };
     }
-}))
+  },
+
+  logout: async () => {
+    try {
+      await api.post("/api/auth/logout");
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+    set({
+      user: null,
+      isAuthenticated: false,
+      errorMessage: null,
+      memberProfile: null
+    });
+  },
+
+  clearError: () => set({ errorMessage: null }),
+
+  getMemberProfile: async () => {
+    set({ profileLoading: true });
+    try {
+      const response = await api.get("/api/member/profile");
+      if (response.data?.success) {
+        set({ memberProfile: response.data.data, profileLoading: false });
+        return response.data.data;
+      } else {
+        set({ profileLoading: false });
+        return null;
+      }
+    } catch (error) {
+      console.error("Profile fetch error:", error);
+      set({ profileLoading: false });
+      return null;
+    }
+  }
+}));
