@@ -7,6 +7,7 @@ import About from '../customer/pages/About'
 import Contact from '../customer/pages/Contact'
 import Login from '../customer/pages/Login'
 import MemberProfile from '../customer/pages/MemberProfile'
+import ResetPassword from '../customer/pages/ResetPassword'
 
 import AdminLayout from '../admin/components/AdminLayout'
 import Dashboard from '../admin/pages/Dashboard'
@@ -65,6 +66,7 @@ const AppRoutes = () => {
                 <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/login" element={<Login />} />
+                <Route path="/set-password" element={<ResetPassword />} />
                 
                 <Route 
                     path="/profile" 

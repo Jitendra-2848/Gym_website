@@ -30,13 +30,13 @@ const Navbar = () => {
     { name: "Contact", path: "/contact" },
   ];
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+    useEffect(() => {
+        const handleScroll = () => {
+            setScrolled(window.scrollY > 20)
+        }
+        window.addEventListener('scroll', handleScroll)
+        return () => window.removeEventListener('scroll', handleScroll)
+    }, [])
 
   useEffect(() => {
     setIsOpen(false);
@@ -68,33 +68,21 @@ const Navbar = () => {
       : location.pathname.startsWith(path);
   };
 
-  return (
-    <>
-      <nav
-        className={`fixed w-full z-50 transition-all duration-300 ${
-          scrolled
-            ? "bg-dark-400/95 backdrop-blur-xl shadow-lg py-2"
-            : "bg-transparent py-4"
-        }`}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <Link to="/" className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-neon-orange rounded-xl flex items-center justify-center">
-                <Dumbbell className="w-6 h-6 hover:rotate-12 duration-300 text-white" />
-              </div>
-              <div
-                onClick={() => {
-                  navigate("/");
-                }}
-                className="hidden sm:block"
-              >
-                <h1 className="font-heading text-lg font-bold text-white">
-                  SANATAN GYM
-                </h1>
-                <p className="text-xs text-primary-400">Admin Panel</p>
-              </div>
-            </Link>
+    return (
+        <>
+            <nav className={`fixed w-full z-50 transition-all duration-300 ${
+                scrolled 
+                    ? 'bg-dark-400/95 backdrop-blur-xl shadow-lg py-2' 
+                    : 'bg-transparent py-4'
+            }`}>
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex items-center justify-between h-16">
+
+                        <Link to="/" className="flex items-center gap-2">
+                            <span className="font-heading text-2xl font-bold text-white">
+                                FIT<span className="text-primary-500">GYM</span>
+                            </span>
+                        </Link>
 
             <div className="hidden md:flex items-center gap-8">
               {navLinks.map((link) => (
@@ -112,26 +100,26 @@ const Navbar = () => {
               ))}
             </div>
 
-            <div className="hidden md:block">
-              {user && user.role ? (
-                <div className="relative" ref={profileMenuRef}>
-                  <button
-                    onClick={() => setShowProfileMenu(!showProfileMenu)}
-                    className="flex items-center gap-2 px-3 py-2 rounded-lg bg-dark-300 hover:bg-dark-200 transition-colors"
-                  >
-                    <div className="w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center">
-                      <User size={16} className="text-white" />
-                    </div>
-                    <span className="text-sm font-medium text-white capitalize">
-                      {user.role}
-                    </span>
-                    <ChevronDown
-                      size={16}
-                      className={`text-gray-400 transition-transform duration-200 ${
-                        showProfileMenu ? "rotate-180" : ""
-                      }`}
-                    />
-                  </button>
+                        <div className="hidden md:block">
+                            {user && user.role ? (
+                                <div className="relative" ref={profileMenuRef}>
+                                    <button
+                                        onClick={() => setShowProfileMenu(!showProfileMenu)}
+                                        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-dark-300 hover:bg-dark-200 transition-colors"
+                                    >
+                                        <div className="w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center">
+                                            <User size={16} className="text-white" />
+                                        </div>
+                                        <span className="text-sm font-medium text-white capitalize">
+                                            {user.role}
+                                        </span>
+                                        <ChevronDown 
+                                            size={16} 
+                                            className={`text-gray-400 transition-transform duration-200 ${
+                                                showProfileMenu ? 'rotate-180' : ''
+                                            }`} 
+                                        />
+                                    </button>
 
                   {showProfileMenu && (
                     <div className="absolute right-0 mt-2 w-48 bg-dark-300 rounded-xl border border-dark-100 shadow-xl overflow-hidden">
@@ -249,17 +237,17 @@ const Navbar = () => {
                   </Link>
                 )}
 
-                {user.role === "member" && (
-                  <Link
-                    to="/profile"
-                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-dark-200 transition-all"
-                  >
-                    <UserCircle size={20} className="text-primary-400" />
-                    <span>My Profile</span>
-                  </Link>
-                )}
-                {/* we have to make the setting page so user cna also chnage its detail like photo name */}
-                {/* <Link
+                                {user.role === 'member' && (
+                                    <Link
+                                        to="/profile"
+                                        className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-dark-200 transition-all"
+                                    >
+                                        <UserCircle size={20} className="text-primary-400" />
+                                        <span>My Profile</span>
+                                    </Link>
+                                )}
+                                {/* we have to make the setting page so user cna also chnage its detail like photo name */}
+                                {/* <Link
                                     to="/settings"
                                     className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-dark-200 transition-all"
                                 >
@@ -305,4 +293,4 @@ const Navbar = () => {
   );
 };
 
-export default Navbar;
+export default Navbar
