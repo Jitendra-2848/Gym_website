@@ -19,13 +19,11 @@ const UpdateUser = () => {
     email: '',
     startDate: '',
     endDate: '',
-    plan: '',
+    duration: '',
     notes: ''
   })
 
   const [photoPreview, setPhotoPreview] = useState(null)
-
-  const plans = ['Basic', 'Gold', 'Premium', 'Annual']
 
   useEffect(() => {
     if (member) {
@@ -218,7 +216,7 @@ const UpdateUser = () => {
           </div>
 
           {/* Membership Details */}
-          <div className="grid md:grid-cols-2 gap-6">
+          {/* <div className="grid md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">Start Date *</label>
               <input
@@ -239,33 +237,27 @@ const UpdateUser = () => {
                 className="input-dark"
               />
             </div>
+          </div> */}
+{/* ------------------ DURATION ------------------ */}
+          <div>
+            <label className="text-gray-300">
+              Duration (Months) <span className="text-red-500">*</span>
+            </label>
+            <select
+              name="duration"
+              value={formData.duration}
+              onChange={handleChange}
+              className="input-dark"
+            >
+              <option value="">Select Duration</option>
+              {Array.from({ length: 12 }, (_, i) => (
+                <option key={i + 1} value={i + 1}>
+                  {i + 1} Month{i + 1 > 1 ? "s" : ""}
+                </option>
+              ))}
+            </select>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Membership Plan *</label>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {plans.map((plan) => (
-                <label
-                  key={plan}
-                  className={`flex items-center justify-center p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                    formData.plan === plan
-                      ? 'border-primary-500 bg-primary-600/20 text-primary-400'
-                      : 'border-dark-100 hover:border-dark-100/50 text-gray-400'
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="plan"
-                    value={plan}
-                    checked={formData.plan === plan}
-                    onChange={handleChange}
-                    className="sr-only"
-                  />
-                  <span className="font-medium">{plan}</span>
-                </label>
-              ))}
-            </div>
-          </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">Notes</label>

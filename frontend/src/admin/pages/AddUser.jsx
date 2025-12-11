@@ -373,6 +373,8 @@ const AddUser = () => {
                 className="input-dark"
                 value={formData.startDate}
                 onChange={handleChange}
+                min={new Date().toISOString().split("T")[0]} // ⬅ disables past dates
+                onFocus={(e) => e.target.showPicker && e.target.showPicker()} // ⬅ open calendar automatically
               />
             </div>
 
