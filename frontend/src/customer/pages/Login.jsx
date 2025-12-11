@@ -6,6 +6,7 @@ import { Lock, User, Eye, EyeOff, AlertCircle, ArrowRight } from 'lucide-react'
 const Login = () => {
     const [formData, setFormData] = useState({ mobile: '', password: '' })
     const [showPassword, setShowPassword] = useState(false)
+    const [showSetPasswordPrompt, setShowSetPasswordPrompt] = useState(false)
 
     const navigate = useNavigate()
 
@@ -20,7 +21,12 @@ const Login = () => {
             if (user.role === 'admin') {
                 navigate('/admin')
             } else if (user.role === 'member') {
-                navigate('/')
+                if (user.isFirstLogin) {
+                    setShowSetPasswordPrompt(true)
+                    navigate('/login')
+                } else {
+                    navigate('/')
+                }
             }
         }
     }, [user, navigate])
@@ -49,7 +55,12 @@ const Login = () => {
             if (result.role === 'admin') {
                 navigate('/admin')
             } else if (result.role === 'member') {
-                navigate('/')
+                if (result.isFirstLogin) {
+                    // show an inline prompt so user can choose to set password
+                    setShowSetPasswordPrompt(true)
+                } else {
+                    navigate('/')
+                }
             }
         }
     }
@@ -110,14 +121,6 @@ const Login = () => {
                                 </button>
                             </div>
                         </div>
-
-                        <div className="flex items-center justify-between">
-                            <label className="flex items-center gap-2 cursor-pointer">
-                                <input type="checkbox" className="w-4 h-4 rounded border-dark-100 bg-dark-300 text-primary-600 focus:ring-primary-500" />
-                                <span className="text-sm text-gray-400">Remember me</span>
-                            </label>
-                        </div>
-
                         <button
                             type="submit"
                             disabled={isLogging}
@@ -137,13 +140,24 @@ const Login = () => {
                         </button>
                     </form>
 
+                  
+
                     <div className="mt-8 text-center">
-                        <p className="text-gray-400">
-                            Not a member yet?{' '}
-                            <Link to="/contact" className="text-primary-400 hover:text-primary-300 font-medium">
-                                Join Now
-                            </Link>
-                        </p>
+                        {showSetPasswordPrompt ? (
+                            <p className="text-gray-400">
+                                Looks like new login?{' '}
+                                <Link to="/set-password" className="text-primary-400 hover:text-primary-300 font-medium">
+                                    Reset Password
+                                </Link>
+                            </p>
+                        ) : (
+                            <p className="text-gray-400">
+                                Not a member yet?{' '}
+                                <Link to="/contact" className="text-primary-400 hover:text-primary-300 font-medium">
+                                    Join Now
+                                </Link>
+                            </p>
+                        )}
                     </div>
                 </div>
             </div>

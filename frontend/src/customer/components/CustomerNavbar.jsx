@@ -30,9 +30,7 @@ const Navbar = () => {
     ]
 
     useEffect(() => {
-        const handleScroll = () => {
-            setScrolled(window.scrollY > 20)
-        }
+        const handleScroll = () => setScrolled(window.scrollY > 20)
         window.addEventListener('scroll', handleScroll)
         return () => window.removeEventListener('scroll', handleScroll)
     }, [])
@@ -74,7 +72,7 @@ const Navbar = () => {
 
                         <Link to="/" className="flex items-center gap-2">
                             <span className="font-heading text-2xl font-bold text-white">
-                                FIT<span className="text-primary-500">GYM</span>
+                                SANATAN <span className="text-primary-500">GYM</span>
                             </span>
                         </Link>
 
@@ -94,12 +92,17 @@ const Navbar = () => {
                             ))}
                         </div>
 
+                        {/* ================== Updated Member Button ================== */}
                         <div className="hidden md:block">
                             {user && user.role ? (
                                 <div className="relative" ref={profileMenuRef}>
                                     <button
                                         onClick={() => setShowProfileMenu(!showProfileMenu)}
-                                        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-dark-300 hover:bg-dark-200 transition-colors"
+                                        className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors
+                                            ${scrolled 
+                                                ? "bg-dark-400/70 hover:bg-dark-300" 
+                                                : "bg-white/5 hover:bg-white/10 backdrop-blur-sm"
+                                            }`}
                                     >
                                         <div className="w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center">
                                             <User size={16} className="text-white" />
@@ -109,9 +112,7 @@ const Navbar = () => {
                                         </span>
                                         <ChevronDown 
                                             size={16} 
-                                            className={`text-gray-400 transition-transform duration-200 ${
-                                                showProfileMenu ? 'rotate-180' : ''
-                                            }`} 
+                                            className={`text-gray-400 transition-transform duration-200 ${showProfileMenu ? 'rotate-180' : ''}`} 
                                         />
                                     </button>
 
@@ -239,14 +240,6 @@ const Navbar = () => {
                                         <span>My Profile</span>
                                     </Link>
                                 )}
-                                {/* we have to make the setting page so user cna also chnage its detail like photo name */}
-                                {/* <Link
-                                    to="/settings"
-                                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:bg-dark-200 transition-all"
-                                >
-                                    <Settings size={20} className="text-gray-400" />
-                                    <span>Settings</span>
-                                </Link> */}
 
                                 <button
                                     onClick={handleLogout}

@@ -18,7 +18,8 @@ export const Store = create((set) => ({
                 set({
                     user: {
                         role: data.role,
-                        isFirstLogin: data.isFirstLogin
+                        isFirstLogin: data.isFirstLogin,
+                        mobile: data.mobile || null
                     },
                     isAuthenticated: true,
                     isLogging: false,
@@ -28,7 +29,8 @@ export const Store = create((set) => ({
                 return {
                     success: true,
                     role: data.role,
-                    isFirstLogin: data.isFirstLogin
+                    isFirstLogin: data.isFirstLogin,
+                    mobile: data.mobile || null
                 }
             } else {
                 set({
@@ -76,5 +78,26 @@ export const Store = create((set) => ({
 
     clearError: () => {
         set({ errorMessage: null })
+    },
+
+    memberProfile: null,
+    profileLoading: false,
+
+    getMemberProfile: async () => {
+        set({ profileLoading: true })
+        try {
+            const response = await api.get('/api/member/profile')
+            if (response.data && response.data.success) {
+                set({ memberProfile: response.data.data, profileLoading: false })
+                return response.data.data
+            } else {
+                set({ profileLoading: false })
+                return null
+            }
+        } catch (error) {
+            console.log('Profile fetch error:', error)
+            set({ profileLoading: false })
+            return null
+        }
     }
 }))
