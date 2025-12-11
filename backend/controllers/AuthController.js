@@ -62,5 +62,12 @@ const logout = (req, res) => {
     res.clearCookie('token', cookieOpts);
     res.status(200).json({ success: true, message: 'Logged out' });
 };
-module.exports = { login, setFirstPassword, logout };
+const check = (req,res)=>{
+    // try {   
+    //     const 
+    // } catch (error) {
+    //     console.log(error.message);
+    // }
+}
+module.exports = { login, setFirstPassword, logout ,check};
 

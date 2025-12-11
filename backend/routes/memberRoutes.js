@@ -5,4 +5,4 @@ const verifyToken = require('../middleware/verifyToken');
 
 router.get('/profile', verifyToken, getProfile);
 
-module.exports = router;
+module.exports = router; 

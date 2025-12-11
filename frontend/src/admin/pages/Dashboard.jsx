@@ -22,7 +22,6 @@ const Dashboard = () => {
     { label: 'Total Members', value: totalMembers, icon: Users, color: 'primary' },
     { label: 'Active Members', value: activeMembers, icon: UserCheck, color: 'green' },
     { label: 'Expired', value: expiredMembers, icon: UserX, color: 'red' },
-    { label: 'This Month', value: 15, icon: UserPlus, color: 'blue' }
   ]
 
   const recentMembers = members.slice(0, 5)
@@ -58,7 +57,7 @@ const Dashboard = () => {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {stats.map((stat, index) => (
           <div key={index} className="card-dark p-6 relative overflow-hidden group">
             <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${colorClasses[stat.color]} opacity-10 rounded-full blur-2xl group-hover:opacity-20 transition-opacity`}></div>

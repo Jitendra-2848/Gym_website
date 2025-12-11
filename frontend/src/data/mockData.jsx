@@ -12,66 +12,6 @@ export const members = [
     status: 'active',
     notes: 'Morning batch, interested in weight training'
   },
-  {
-    id: '2',
-    name: 'Priya Sharma',
-    mobile: '9876543211',
-    email: 'priya@example.com',
-    startDate: '2025-02-15',
-    endDate: '2025-08-15',
-    plan: 'Gold',
-    photoUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
-    status: 'active',
-    notes: 'Evening batch, yoga enthusiast'
-  },
-  {
-    id: '3',
-    name: 'Amit Singh',
-    mobile: '9876543212',
-    email: 'amit@example.com',
-    startDate: '2024-10-01',
-    endDate: '2025-01-01',
-    plan: 'Basic',
-    photoUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
-    status: 'expired',
-    notes: 'Needs renewal reminder'
-  },
-  {
-    id: '4',
-    name: 'Sneha Patel',
-    mobile: '9876543213',
-    email: 'sneha@example.com',
-    startDate: '2025-01-10',
-    endDate: '2025-07-10',
-    plan: 'Premium',
-    photoUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150',
-    status: 'active',
-    notes: 'Personal training sessions'
-  },
-  {
-    id: '5',
-    name: 'Vikram Reddy',
-    mobile: '9876543214',
-    email: 'vikram@example.com',
-    startDate: '2025-01-20',
-    endDate: '2026-01-20',
-    plan: 'Annual',
-    photoUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
-    status: 'active',
-    notes: 'CrossFit enthusiast, morning batch'
-  },
-  {
-    id: '6',
-    name: 'Anjali Gupta',
-    mobile: '9876543215',
-    email: 'anjali@example.com',
-    startDate: '2024-12-01',
-    endDate: '2025-03-01',
-    plan: 'Gold',
-    photoUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150',
-    status: 'active',
-    notes: 'Zumba classes'
-  }
 ]
 
 export const programs = [

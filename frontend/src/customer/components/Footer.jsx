@@ -8,7 +8,7 @@ const Footer = () => {
     <footer className="bg-dark-300 border-t border-dark-100 pb-20 md:pb-0">
       {/* Main Footer */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 ">
           {/* Brand Section */}
           <div className="lg:col-span-1">
             <Link to="/" className="flex items-center gap-3 mb-6">
@@ -42,7 +42,7 @@ const Footer = () => {
             <ul className="space-y-4">
               {[
                 { label: 'Home', path: '/' },
-                { label: 'About Us', path: '/about' },,
+                { label: 'About Us', path: '/about' },
                 { label: 'Contact', path: '/contact' },
                 { label: 'Login', path: '/login' },
               ].map((link) => (
@@ -55,7 +55,8 @@ const Footer = () => {
               ))}
             </ul>
           </div>
-
+              <>
+              </>
           {/* Contact Info */}
           <div>
             <h3 className="font-heading text-lg font-bold text-white mb-6">CONTACT US</h3>

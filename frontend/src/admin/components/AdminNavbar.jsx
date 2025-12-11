@@ -29,7 +29,7 @@ const AdminNavbar = ({ onMenuClick }) => {
             <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-neon-orange rounded-xl flex items-center justify-center">
               <Dumbbell className="w-6 h-6 text-white" />
             </div>
-            <div className="hidden sm:block">
+            <div onClick={()=>{navigate('/') }} className="hidden sm:block">
               <h1 className="font-heading text-lg font-bold text-white">SANATAN GYM</h1>
               <p className="text-xs text-primary-400">Admin Panel</p>
             </div>
