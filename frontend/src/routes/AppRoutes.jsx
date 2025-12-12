@@ -17,17 +17,20 @@ import UserList from "../admin/pages/UserList";
 import UserProfile from "../admin/pages/UserProfile";
 import UpdateUser from "../admin/pages/UpdateUser";
 
+// Global Loading Spinner Component
+const LoadingSpinner = () => (
+  <div className="min-h-screen bg-dark-400 flex items-center justify-center">
+    <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
+  </div>
+);
+
 // Admin Protected Route
 const AdminProtectedRoute = ({ children }) => {
   const user = Store((state) => state.user);
-  const isLogging = Store((state) => state.isLogging);
+  const checking = Store((state) => state.checking); // ✅ Use checking, not isLogging
 
-  if (isLogging) {
-    return (
-      <div className="min-h-screen bg-dark-400 flex items-center justify-center">
-        <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
+  if (checking) {
+    return <LoadingSpinner />;
   }
 
   if (!user || !user.role) return <Navigate to="/login" replace />;
@@ -39,28 +42,48 @@ const AdminProtectedRoute = ({ children }) => {
 // Member Protected Route
 const MemberProtectedRoute = ({ children }) => {
   const user = Store((state) => state.user);
-  const isLogging = Store((state) => state.isLogging);
+  const checking = Store((state) => state.checking); // ✅ Use checking, not isLogging
 
-  if (isLogging) {
-    return (
-      <div className="min-h-screen bg-dark-400 flex items-center justify-center">
-        <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
+  if (checking) {
+    return <LoadingSpinner />;
   }
 
   if (!user || !user.role) return <Navigate to="/login" replace />;
 
   return children;
 };
+const PublicOnlyRoute = ({ children }) => {
+  const user = Store((state) => state.user);
+  const checking = Store((state) => state.checking);
+
+  if (checking) {
+    return <LoadingSpinner />;
+  }
+
+  // If user is logged in, redirect them away from login page
+  if (user && user.role) {
+    if (user.role === "admin") {
+      return <Navigate to="/admin" replace />;
+    }
+    return <Navigate to="/profile" replace />;
+  }
+
+  return children;
+};
 
 const AppRoutes = () => {
-  const location = useLocation();
   const checkAuth = Store((state) => state.checkAuth);
+  const checking = Store((state) => state.checking);
 
   useEffect(() => {
     checkAuth();
-  }, []); // only run once on mount
+  }, []);
+
+  // Optional: Show global loader while checking auth
+  // This prevents any route from rendering until auth is checked
+  if (checking) {
+    return <LoadingSpinner />;
+  }
 
   return (
     <Routes>
@@ -69,7 +92,17 @@ const AppRoutes = () => {
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
-        <Route path="/login" element={<Login />} />
+        
+        {/* Login should redirect if already authenticated */}
+        <Route
+          path="/login"
+          element={
+            <PublicOnlyRoute>
+              <Login />
+            </PublicOnlyRoute>
+          }
+        />
+        
         <Route path="/set-password" element={<ResetPassword />} />
 
         <Route
@@ -89,7 +122,8 @@ const AppRoutes = () => {
           <AdminProtectedRoute>
             <AdminLayout />
           </AdminProtectedRoute>
-        }>
+        }
+      >
         <Route index element={<Dashboard />} />
         <Route path="add" element={<AddUser />} />
         <Route path="list" element={<UserList />} />

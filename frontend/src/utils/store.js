@@ -40,6 +40,8 @@ export const Store = create((set, get) => ({
         isAuthenticated: false,
         checking: false
       });
+    } finally{
+      set({checking:false});
     }
   },
   login: async (credentials) => {
@@ -126,14 +128,22 @@ export const Store = create((set, get) => ({
   //     console.log(error)
   //   }
   // },
-  cancelUserMembership:async(id)=>{
-    try {
-      const res = await api.put("/api/admin/cancel",id)
-      console.log(res.data);
-    } catch (error) {
-      console.log(error)
+  // Add this function to your existing Store
+cancelUserMembership: async (id) => {
+  try {
+    const response = await api.put(`/api/admin/cancel`,{id});
+    const data = response.data;
+    if (response.ok && data.success) {
+      const { getAllUser } = Store.getState();
+      await getAllUser();
+      return { success: true };
     }
-  },
+    return { success: false, message: data.message || 'Failed to cancel' };
+  } catch (error) {
+    console.error('Cancel membership error:', error);
+    return { success: false, message: 'Network error' };
+  }
+},
   getAllUser: async () => {
     set({ userListLoading: true });
     try {
@@ -172,12 +182,8 @@ export const Store = create((set, get) => ({
   },
   updateUser: async (id, formData) => {
     try {
-      const response = await api.put(`/api/admin/update/${id}`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
+      console.log(formData)
+      const response = await api.put(`/api/admin/update/${id}`, formData);
       if (response.data?.success) {
         get().getAllUser();
         return { success: true, data: response.data.data };
@@ -194,13 +200,12 @@ export const Store = create((set, get) => ({
   },
   deleteUser: async (id) => {
     try {
+      console.log(id);
       const response = await api.delete(`/api/admin/delete/${id}`);
-
       if (response.data?.success) {
         get().getAllUser();
         return { success: true };
       }
-
       return { success: false, message: response.data?.message || "Failed to delete member" };
     } catch (error) {
       console.error("Delete user error:", error);
@@ -210,5 +215,4 @@ export const Store = create((set, get) => ({
       };
     }
   },
-
 }));
