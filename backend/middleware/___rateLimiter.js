@@ -12,5 +12,4 @@ const memberApiLimiter = rateLimit({
     max: 50,
     message: { success: false, message: 'Too many requests.' }
 })
-
 module.exports = { loginLimiter, memberApiLimiter };

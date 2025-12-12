@@ -1,4 +1,3 @@
-// src/admin/pages/AddUser.jsx (UPDATED FULL VERSION WITH CAMERA)
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -8,152 +7,87 @@ import {
   Camera,
   CheckCircle,
   AlertCircle,
+  RefreshCw,
+  Percent,
+  IndianRupee,
+  Calendar,
+  User,
+  Phone,
+  Mail,
 } from "lucide-react";
+import { Store } from "../../utils/store";
+import ConfirmationModal from "../components/ConfirmationModal";
 
-const MONTHLY_PRICE = 500; // price per month
+// Pricing Tiers
+const PRICING_TIERS = [
+  { months: 1, pricePerMonth: 500, discount: 0, label: "1 Month" },
+  { months: 2, pricePerMonth: 480, discount: 4, label: "2 Months" },
+  { months: 3, pricePerMonth: 450, discount: 10, label: "3 Months" },
+  { months: 6, pricePerMonth: 400, discount: 20, label: "6 Months" },
+  { months: 12, pricePerMonth: 350, discount: 30, label: "12 Months" },
+];
 
 const AddUser = () => {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState("");
+  const { addUser } = Store();
 
+  // Refs
   const fileInputRef = useRef(null);
   const videoRef = useRef(null);
 
+  // UI States
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
+  const [showModal, setShowModal] = useState(false);
+
+  // Photo States
+  const [photoFile, setPhotoFile] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState(null);
+  const [showPhotoOptions, setShowPhotoOptions] = useState(false);
+
+  // Camera States
+  const [hasCamera, setHasCamera] = useState(false);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [videoStream, setVideoStream] = useState(null);
+  const [facingMode, setFacingMode] = useState("user");
+
+  // Form Data
   const [formData, setFormData] = useState({
     name: "",
     mobile: "",
     email: "",
-    startDate: "",
+    startDate: new Date().toISOString().split("T")[0],
     endDate: "",
     duration: "",
-    notes: "",
-    photo: null,
-    discountEnabled: false,
-    discount: "",
-    totalAmount: 0,
-    grandTotal: 0,
+    focus_note: "",
+    extraDiscount: 0,
   });
 
-  const [photoPreview, setPhotoPreview] = useState(null);
-  const [showPhotoOptions, setShowPhotoOptions] = useState(false);
+  // Pricing State
+  const [pricing, setPricing] = useState({
+    pricePerMonth: 0,
+    tierDiscount: 0,
+    tierSaving: 0,
+    totalBeforeDiscount: 0,
+    extraDiscount: 0,
+    grandTotal: 0,
+    selectedPlan: null
+  });
 
-  const [isCameraOpen, setIsCameraOpen] = useState(false);
-  const [videoStream, setVideoStream] = useState(null);
-
-  // ------------------- HANDLE CHANGES ------------------------
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-
-    let updatedData = { ...formData, [name]: value };
-
-    // Auto-set End Date when startDate or duration changes
-    if (
-      (name === "startDate" || name === "duration") &&
-      updatedData.startDate &&
-      updatedData.duration
-    ) {
-      const start = new Date(updatedData.startDate);
-      start.setMonth(start.getMonth() + Number(updatedData.duration));
-      updatedData.endDate = start.toISOString().split("T")[0];
-    }
-
-    // Auto-recalculate amounts
-    if (
-      name === "duration" ||
-      name === "discount" ||
-      name === "discountEnabled"
-    ) {
-      const durationMonths = Number(updatedData.duration || 0);
-      const totalAmount = durationMonths * MONTHLY_PRICE;
-      const discount = updatedData.discountEnabled
-        ? Number(updatedData.discount || 0)
-        : 0;
-      updatedData.totalAmount = totalAmount;
-      updatedData.grandTotal = Math.max(totalAmount - discount, 0);
-    }
-
-    setFormData(updatedData);
-    setError("");
-  };
-
-  // ------------------- PHOTO UPLOAD ------------------------
-  const handlePhotoChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setFormData({ ...formData, photo: file });
-      setPhotoPreview(URL.createObjectURL(file));
-      setShowPhotoOptions(false);
-    }
-  };
-
-  const removePhoto = () => {
-    setFormData({ ...formData, photo: null });
-    setPhotoPreview(null);
-  };
-
-  // ------------------- CAMERA HANDLING ----------------------
-  const openCamera = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "user" },
-      });
-      setVideoStream(stream);
-      setIsCameraOpen(true);
-      setShowPhotoOptions(false);
-
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
+  useEffect(() => {
+    const checkCamera = async () => {
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter((d) => d.kind === "videoinput");
+        setHasCamera(videoDevices.length > 0);
+      } catch (err) {
+        setHasCamera(false);
       }
-    } catch (err) {
-      console.error("Error accessing camera:", err);
-      setError("Unable to access camera. Please check permissions.");
-    }
-  };
+    };
+    checkCamera();
+  }, []);
 
-  const stopCamera = () => {
-    if (videoStream) {
-      videoStream.getTracks().forEach((track) => track.stop());
-    }
-    setVideoStream(null);
-    setIsCameraOpen(false);
-  };
-
-  const capturePhoto = () => {
-    if (!videoRef.current) return;
-
-    const video = videoRef.current;
-    const canvas = document.createElement("canvas");
-    const width = video.videoWidth || 320;
-    const height = video.videoHeight || 320;
-
-    canvas.width = width;
-    canvas.height = height;
-
-    const ctx = canvas.getContext("2d");
-    ctx.drawImage(video, 0, 0, width, height);
-
-    canvas.toBlob(
-      (blob) => {
-        if (!blob) return;
-        const file = new File([blob], "captured-photo.jpg", {
-          type: "image/jpeg",
-        });
-
-        const previewUrl = URL.createObjectURL(blob);
-        setFormData((prev) => ({ ...prev, photo: file }));
-        setPhotoPreview(previewUrl);
-
-        stopCamera();
-      },
-      "image/jpeg",
-      0.9
-    );
-  };
-
-  // Cleanup camera on unmount
   useEffect(() => {
     return () => {
       if (videoStream) {
@@ -162,365 +96,412 @@ const AddUser = () => {
     };
   }, [videoStream]);
 
-  // --------------------- VALIDATION -------------------------
+  // Calculate Pricing
+  useEffect(() => {
+    if (!formData.duration) {
+      setPricing({
+        pricePerMonth: 0,
+        tierDiscount: 0,
+        totalBeforeDiscount: 0,
+        extraDiscount: 0,
+        grandTotal: 0,
+        selectedPlan: null
+      });
+      return;
+    }
+
+    const months = parseInt(formData.duration);
+    const tier = PRICING_TIERS.find((t) => t.months === months) || PRICING_TIERS[0];
+    
+    const basePrice = 500;
+    const totalBase = basePrice * months;
+    const totalWithTier = tier.pricePerMonth * months;
+    const tierSaving = totalBase - totalWithTier;
+    const extraDiscount = Number(formData.extraDiscount) || 0;
+    const grandTotal = Math.max(totalWithTier - extraDiscount, 0);
+
+    setPricing({
+      pricePerMonth: tier.pricePerMonth,
+      tierDiscount: tier.discount,
+      tierSaving: tierSaving,
+      totalBeforeDiscount: totalWithTier,
+      extraDiscount: extraDiscount,
+      grandTotal: grandTotal,
+      selectedPlan: tier
+    });
+  }, [formData.duration, formData.extraDiscount]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    let updated = { ...formData, [name]: value };
+
+    if ((name === "startDate" || name === "duration") && updated.startDate && updated.duration) {
+      const start = new Date(updated.startDate);
+      start.setMonth(start.getMonth() + Number(updated.duration));
+      updated.endDate = start.toISOString().split("T")[0];
+    }
+
+    setFormData(updated);
+    setError("");
+  };
+
+  const selectDuration = (months) => {
+    let updated = { ...formData, duration: months.toString() };
+    if (updated.startDate) {
+      const start = new Date(updated.startDate);
+      start.setMonth(start.getMonth() + months);
+      updated.endDate = start.toISOString().split("T")[0];
+    }
+    setFormData(updated);
+    setError("");
+  };
+
+  const handlePhotoUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setPhotoFile(file);
+      setPhotoPreview(URL.createObjectURL(file));
+      setShowPhotoOptions(false);
+    }
+  };
+
+  const removePhoto = () => {
+    setPhotoFile(null);
+    setPhotoPreview(null);
+    setShowPhotoOptions(false);
+  };
+
+  // --- Helpers to fix Input issues ---
+  
+  // 1. Prevent scroll from changing number
+  const handleWheel = (e) => e.target.blur();
+  
+  // 2. Open Calendar on click anywhere in input
+  const handleDateClick = (e) => {
+    if(e.target.showPicker) e.target.showPicker();
+  };
+
+  // --- Camera Logic ---
+  const openCamera = async (mode = "user") => {
+    try {
+      if (videoStream) videoStream.getTracks().forEach((track) => track.stop());
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: mode, width: { ideal: 640 }, height: { ideal: 480 } },
+      });
+      setVideoStream(stream);
+      setFacingMode(mode);
+      setIsCameraOpen(true);
+      setShowPhotoOptions(false);
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.play();
+        }
+      }, 100);
+    } catch (err) {
+      setError("Unable to access camera.");
+    }
+  };
+
+  const capturePhoto = () => {
+    if (!videoRef.current) return;
+    const video = videoRef.current;
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext("2d");
+    if (facingMode === "user") {
+      ctx.translate(canvas.width, 0);
+      ctx.scale(-1, 1);
+    }
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    canvas.toBlob((blob) => {
+      if (!blob) return;
+      const file = new File([blob], "photo.jpg", { type: "image/jpeg" });
+      setPhotoFile(file);
+      setPhotoPreview(URL.createObjectURL(blob));
+      stopCamera();
+    }, "image/jpeg", 0.9);
+  };
+
+  const stopCamera = () => {
+    if (videoStream) videoStream.getTracks().forEach((track) => track.stop());
+    setVideoStream(null);
+    setIsCameraOpen(false);
+  };
+
+  const switchCamera = () => {
+    openCamera(facingMode === "user" ? "environment" : "user");
+  };
+
   const validateForm = () => {
     if (!formData.name.trim()) return "Name is required";
-    if (!formData.mobile.match(/^\d{10}$/))
-      return "Enter valid 10-digit mobile number";
-
+    if (!formData.mobile.match(/^\d{10}$/)) return "Enter valid 10-digit mobile";
     if (!formData.startDate) return "Start date is required";
-    if (!formData.duration) return "Select duration";
-
-    if (formData.discountEnabled && Number(formData.discount) < 0)
-      return "Discount cannot be negative";
-
+    if (!formData.duration) return "Select a plan";
     return null;
   };
 
-  // --------------------- SUBMIT FORM ------------------------
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
+    const err = validateForm();
+    if (err) {
+      setError(err);
+      return;
+    }
+    setError("");
+    setShowModal(true);
+  };
 
-    const validationError = validateForm();
-    if (validationError) return setError(validationError);
-
+  const handleFinalConfirm = async () => {
     setLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setLoading(false);
-    setSuccess(true);
+    try {
+      const data = new FormData();
+      data.append("name", formData.name);
+      data.append("mobile", formData.mobile);
+      data.append("email", formData.email || "");
+      data.append("startDate", formData.startDate);
+      data.append("duration", formData.duration);
+      data.append("discount", formData.extraDiscount || 0);
+      data.append("totalAmount", pricing.grandTotal);
+      data.append("focus_note", formData.focus_note || "");
+      if (photoFile) data.append("profile_pic", photoFile);
 
-    setTimeout(() => navigate("/admin/list"), 2000);
+      const result = await addUser(data);
+
+      if (result.success) {
+        setShowModal(false);
+        setSuccess(true);
+        setTimeout(() => navigate("/admin/list"), 2000);
+      } else {
+        setShowModal(false);
+        setError(result.message || "Failed to add member");
+      }
+    } catch (err) {
+      setShowModal(false);
+      setError("Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatDisplayDate = (dateStr) => {
+    if (!dateStr) return "—";
+    return new Date(dateStr).toLocaleDateString("en-IN", {
+      day: "numeric", month: "short", year: "numeric",
+    });
   };
 
   return (
-    <div className="max-w-3xl mx-auto">
-      {/* HEADER */}
+    <div className="max-w-4xl mx-auto pt-6 pb-12 px-4 relative">
       <div className="mb-8">
         <h1 className="font-heading text-3xl font-bold text-white flex items-center gap-3">
-          <UserPlus className="text-primary-500" />
+          <UserPlus className="text-primary-500" size={32} />
           Add New Member
         </h1>
+        <p className="text-gray-400 mt-2">Register a new gym member</p>
       </div>
 
-      {/* SUCCESS */}
       {success && (
-        <div className="mb-6 p-4 rounded-lg bg-green-500/20 border border-green-500 flex items-center gap-3">
-          <CheckCircle className="text-green-500" />
-          <span className="text-green-400">Member added successfully!</span>
+        <div className="mb-6 p-4 rounded-xl bg-green-500/20 border border-green-500/50 flex items-center gap-3">
+          <CheckCircle className="text-green-500" size={24} />
+          <span className="text-green-400 font-medium">Member added successfully! Redirecting...</span>
         </div>
       )}
 
-      {/* ERROR */}
       {error && (
-        <div className="mb-6 p-4 rounded-lg bg-red-500/20 border border-red-500 flex items-center gap-3">
-          <AlertCircle className="text-red-500" />
+        <div className="mb-6 p-4 rounded-xl bg-red-500/20 border border-red-500/50 flex items-center gap-3">
+          <AlertCircle className="text-red-500" size={24} />
           <span className="text-red-400">{error}</span>
         </div>
       )}
 
-      {/* FORM */}
-      <div className="card-dark p-6 md:p-8">
-        <form className="space-y-6" onSubmit={handleSubmit}>
-          {/* ------------------ PHOTO PICKER (ONE CIRCLE + OPTIONS) ------------------ */}
-          <div className="flex flex-col items-center mb-6">
-            <div
-              className="relative w-32 h-32 rounded-full border-2 border-dashed border-dark-100 flex items-center justify-center cursor-pointer hover:border-primary-500 transition"
-              onClick={() => setShowPhotoOptions((prev) => !prev)}
-            >
-              {photoPreview ? (
-                <img
-                  src={photoPreview}
-                  className="w-full h-full rounded-full object-cover"
-                  alt="Member"
-                />
-              ) : (
-                <Camera className="text-gray-400" size={40} />
-              )}
-
-              {photoPreview && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    removePhoto();
-                  }}
-                  className="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-red-500 text-white flex justify-center items-center"
-                >
-                  <X size={14} />
-                </button>
-              )}
-            </div>
-
-            {/* Options Popup */}
-            {showPhotoOptions && (
-              <div className="mt-4 p-3 rounded-xl bg-dark-200 border border-dark-100 text-gray-300 space-y-2 w-44">
-                <button
-                  type="button"
-                  className="w-full py-2 flex items-center justify-center gap-2 hover:text-primary-400"
-                  onClick={() => fileInputRef.current.click()}
-                >
-                  <Upload size={16} />
-                  <span>Upload Photo</span>
-                </button>
-
-                <button
-                  type="button"
-                  className="w-full py-2 flex items-center justify-center gap-2 hover:text-primary-400"
-                  onClick={openCamera}
-                >
-                  <Camera size={16} />
-                  <span>Take Photo</span>
-                </button>
-
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handlePhotoChange}
-                />
-              </div>
-            )}
-          </div>
-
-          {/* CAMERA MODAL */}
-          {isCameraOpen && (
-            <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
-              <div className="bg-dark-300 p-4 rounded-xl w-full max-w-md space-y-4">
-                <h2 className="text-white font-semibold text-lg mb-2">
-                  Capture Photo
-                </h2>
-
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  playsInline
-                  className="w-full rounded-lg bg-black"
-                />
-
-                <div className="flex justify-end gap-3 pt-2">
-                  <button
-                    type="button"
-                    onClick={stopCamera}
-                    className="px-4 py-2 rounded-lg bg-dark-200 text-gray-300 hover:bg-dark-100"
+      <form onSubmit={handleSubmit}>
+        <div className="grid lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            <div className="card-dark p-6">
+              <h2 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
+                <User className="text-primary-500" size={20} />
+                Personal Information
+              </h2>
+              <div className="flex flex-col md:flex-row gap-6">
+                <div className="flex flex-col items-center">
+                  <div
+                    className="relative w-28 h-28 rounded-full border-2 border-dashed border-dark-100 flex items-center justify-center cursor-pointer hover:border-primary-500 transition overflow-hidden bg-dark-200"
+                    onClick={() => setShowPhotoOptions(!showPhotoOptions)}
                   >
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    onClick={capturePhoto}
-                    className="px-4 py-2 rounded-lg bg-primary-600 text-white hover:bg-primary-500 flex items-center gap-2"
-                  >
-                    <Camera size={18} />
-                    Capture
-                  </button>
+                    {photoPreview ? (
+                      <img src={photoPreview} className="w-full h-full object-cover" alt="Photo" />
+                    ) : (
+                      <Camera className="text-gray-500" size={32} />
+                    )}
+                    {photoPreview && (
+                      <button type="button" onClick={(e) => { e.stopPropagation(); removePhoto(); }} className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center"><X size={12} /></button>
+                    )}
+                  </div>
+                  <span className="text-gray-500 text-xs mt-2">Tap to add</span>
+                  {showPhotoOptions && (
+                    <div className="mt-2 p-2 rounded-lg bg-dark-200 border border-dark-100 space-y-1 w-36 relative z-10">
+                      <button type="button" className="w-full py-2 text-sm flex items-center justify-center gap-2 text-gray-300 hover:text-primary-400" onClick={() => fileInputRef.current.click()}><Upload size={14} /> Upload</button>
+                      {hasCamera && (
+                        <button type="button" className="w-full py-2 text-sm flex items-center justify-center gap-2 text-gray-300 hover:text-primary-400" onClick={() => openCamera("user")}><Camera size={14} /> Camera</button>
+                      )}
+                      <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1 space-y-4">
+                  <div>
+                    <label className="text-sm text-gray-400 mb-1 block">Full Name *</label>
+                    <input name="name" value={formData.name} onChange={handleChange} placeholder="Enter full name" className="input-dark w-full" />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm text-gray-400 mb-1 block">Mobile *</label>
+                      <input name="mobile" value={formData.mobile} onChange={handleChange} maxLength={10} placeholder="10 digits" className="input-dark w-full" />
+                    </div>
+                    <div>
+                      <label className="text-sm text-gray-400 mb-1 block">Email</label>
+                      <input name="email" value={formData.email} onChange={handleChange} placeholder="Optional" className="input-dark w-full" />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-          )}
 
-          {/* ------------------ NAME + MOBILE ------------------ */}
-          <div className="grid md:grid-cols-2 gap-6">
-            <div>
-              <label className="text-gray-300">
-                Full Name <span className="text-red-500">*</span>
-              </label>
-              <input
-                name="name"
-                className="input-dark"
-                placeholder="Full Name"
-                value={formData.name}
-                onChange={handleChange}
-              />
-            </div>
-
-            <div>
-              <label className="text-gray-300">
-                Mobile Number <span className="text-red-500">*</span>
-              </label>
-              <input
-                name="mobile"
-                placeholder="10-digit Mobile Number"
-                className="input-dark"
-                maxLength={10}
-                value={formData.mobile}
-                onChange={handleChange}
-              />
-            </div>
-          </div>
-
-          {/* EMAIL */}
-          <div>
-            <label className="text-gray-300">Email</label>
-            <input
-              name="email"
-              className="input-dark"
-              placeholder="Email Address (optional)"
-              value={formData.email}
-              onChange={handleChange}
-            />
-          </div>
-
-          {/* ------------------ START DATE + AUTO END DATE ------------------ */}
-          <div className="grid md:grid-cols-2 gap-6">
-            <div>
-              <label className="text-gray-300">
-                Start Date <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="date"
-                name="startDate"
-                className="input-dark"
-                value={formData.startDate}
-                onChange={handleChange}
-                min={new Date().toISOString().split("T")[0]} // ⬅ disables past dates
-                onFocus={(e) => e.target.showPicker && e.target.showPicker()} // ⬅ open calendar automatically
-              />
-            </div>
-
-            <div>
-              <label className="text-gray-300">End Date (Auto)</label>
-              <input
-                type="date"
-                disabled
-                value={formData.endDate}
-                className="input-dark opacity-60"
-              />
-            </div>
-          </div>
-
-          {/* ------------------ DURATION ------------------ */}
-          <div>
-            <label className="text-gray-300">
-              Duration (Months) <span className="text-red-500">*</span>
-            </label>
-            <select
-              name="duration"
-              value={formData.duration}
-              onChange={handleChange}
-              className="input-dark"
-            >
-              <option value="">Select Duration</option>
-              {Array.from({ length: 12 }, (_, i) => (
-                <option key={i + 1} value={i + 1}>
-                  {i + 1} Month{i + 1 > 1 ? "s" : ""}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* ------------------ DISCOUNT ------------------ */}
-          <div className="mt-4">
-            <label className="flex gap-3 text-gray-300">
-              <input
-                type="checkbox"
-                checked={formData.discountEnabled}
-                onChange={(e) =>
-                  handleChange({
-                    target: {
-                      name: "discountEnabled",
-                      value: e.target.checked,
-                    },
-                  })
-                }
-              />
-              Apply Discount?
-            </label>
-
-            {formData.discountEnabled && (
-              <div className="mt-3">
-                <label className="text-gray-300">Discount Amount (₹)</label>
-                <input
-                  name="discount"
-                  type="number"
-                  className="input-dark"
-                  placeholder="Discount Amount"
-                  value={formData.discount}
-                  onChange={handleChange}
-                />
+            <div className="card-dark p-6">
+              <h2 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
+                <Calendar className="text-primary-500" size={20} />
+                Membership Plan
+              </h2>
+              <div className="mb-6">
+                <label className="text-sm text-gray-400 mb-3 block">Select Plan *</label>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                  {PRICING_TIERS.map((tier) => (
+                    <button
+                      key={tier.months}
+                      type="button"
+                      onClick={() => selectDuration(tier.months)}
+                      className={`p-4 rounded-xl border-2 transition-all text-center ${
+                        formData.duration === tier.months.toString()
+                          ? "border-primary-500 bg-primary-500/10"
+                          : "border-dark-100 hover:border-dark-50 bg-dark-200"
+                      }`}
+                    >
+                      <p className="text-white font-bold text-lg">{tier.label}</p>
+                      <p className="text-primary-400 font-semibold">₹{tier.pricePerMonth}/mo</p>
+                      {tier.discount > 0 && <span className="inline-block mt-1 px-2 py-0.5 rounded-full text-xs bg-green-500/20 text-green-400">{tier.discount}% OFF</span>}
+                    </button>
+                  ))}
+                </div>
               </div>
-            )}
-          </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm text-gray-400 mb-1 block">Start Date *</label>
+                  <input 
+                    type="date" 
+                    name="startDate" 
+                    value={formData.startDate} 
+                    onChange={handleChange} 
+                    onClick={handleDateClick} // Opens picker on click
+                    min={new Date().toISOString().split("T")[0]} 
+                    className="input-dark w-full cursor-pointer" 
+                  />
+                </div>
+                <div>
+                  <label className="text-sm text-gray-400 mb-1 block">End Date</label>
+                  <div className="input-dark opacity-60 flex items-center">{formData.endDate ? formatDisplayDate(formData.endDate) : "Select plan first"}</div>
+                </div>
+              </div>
+            </div>
 
-          {/* ------------------ AMOUNT BREAKDOWN ------------------ */}
-          <div className="mt-6 p-4 rounded-xl bg-dark-200 border border-dark-100">
-            <p className="text-gray-300">
-              Monthly Rate:{" "}
-              <span className="text-primary-400">₹{MONTHLY_PRICE}</span>
-            </p>
-
-            <p className="text-gray-300">
-              Total Before Discount:
-              <span className="text-primary-400 ml-2">
-                ₹{formData.totalAmount}
-              </span>
-            </p>
-
-            {formData.discountEnabled && (
-              <p className="text-gray-300">
-                Discount:
-                <span className="text-red-400 ml-2">
-                  -₹{formData.discount || 0}
-                </span>
-              </p>
-            )}
-          </div>
-
-          <div className="mt-4">
-            <label className="text-gray-300 font-medium mb-2 block">
-              Grand Total (₹)
-            </label>
-
-            <div className="p-3 rounded-lg bg-dark-200 border border-dark-100">
-              <p className="text-white font-bold text-xl">
-                ₹{formData.grandTotal}
-              </p>
+            <div className="card-dark p-6">
+              <h2 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
+                <Percent className="text-primary-500" size={20} />
+                Additional Options
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm text-gray-400 mb-1 block">Extra Discount (₹)</label>
+                  <input 
+                    type="number" 
+                    name="extraDiscount" 
+                    value={formData.extraDiscount} 
+                    onChange={handleChange} 
+                    onWheel={handleWheel} // Prevents scroll change
+                    placeholder="0" 
+                    min="0" 
+                    className="input-dark w-full" 
+                  />
+                </div>
+                <div>
+                  <label className="text-sm text-gray-400 mb-1 block">Focus Area / Notes</label>
+                  <input name="focus_note" value={formData.focus_note} onChange={handleChange} placeholder="e.g., Weight loss" className="input-dark w-full" />
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* ------------------ NOTES ------------------ */}
-          <div>
-            <label className="text-gray-300">Notes</label>
-            <textarea
-              className="input-dark"
-              rows={4}
-              name="notes"
-              placeholder="Any additional information about the member..."
-              value={formData.notes}
-              onChange={handleChange}
-            ></textarea>
-          </div>
-
-          {/* BUTTONS */}
-          <div className="flex gap-4 pt-4">
-            <button
-              type="button"
-              onClick={() => navigate(-1)}
-              className="flex-1 py-4 bg-dark-200 rounded-lg text-gray-300"
-            >
-              Cancel
-            </button>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 btn-primary flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Adding...
-                </>
+          <div className="lg:col-span-1">
+            <div className="card-dark p-6 sticky top-6">
+              <h2 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
+                <IndianRupee className="text-primary-500" size={20} />
+                Payment Summary
+              </h2>
+              {formData.duration ? (
+                <div className="space-y-4">
+                  <div className="p-4 rounded-xl bg-primary-500/10 border border-primary-500/30">
+                    <p className="text-gray-400 text-sm">Selected Plan</p>
+                    <p className="text-white font-bold text-xl">{formData.duration} Month{formData.duration > 1 ? "s" : ""}</p>
+                    <p className="text-primary-400">₹{pricing.pricePerMonth}/month</p>
+                  </div>
+                  <div className="space-y-3 text-sm">
+                    <div className="flex justify-between text-gray-400"><span>Base Price</span><span>₹{500 * parseInt(formData.duration)}</span></div>
+                    {pricing.tierSaving > 0 && <div className="flex justify-between text-green-400"><span>Plan Savings</span><span>-₹{pricing.tierSaving}</span></div>}
+                    {pricing.extraDiscount > 0 && <div className="flex justify-between text-red-400"><span>Extra Discount</span><span>-₹{pricing.extraDiscount}</span></div>}
+                    <div className="border-t border-dark-100 pt-3 flex justify-between text-white font-bold text-lg"><span>Total Pay</span><span className="text-primary-400">₹{pricing.grandTotal}</span></div>
+                  </div>
+                </div>
               ) : (
-                <>
-                  <UserPlus size={20} />
-                  Add Member
-                </>
+                <div className="text-center py-8 text-gray-500">
+                  <Calendar size={48} className="mx-auto mb-3 opacity-50" />
+                  <p>Select a plan to see pricing</p>
+                </div>
               )}
-            </button>
+              <button type="submit" disabled={loading || !formData.duration} className="w-full mt-6 btn-primary flex items-center justify-center gap-2 py-4 disabled:opacity-50">
+                <UserPlus size={20} /> Proceed
+              </button>
+              <button type="button" onClick={() => navigate(-1)} className="w-full mt-3 py-3 rounded-lg bg-dark-200 text-gray-400 hover:bg-dark-100 transition-colors">Cancel</button>
+            </div>
           </div>
-        </form>
-      </div>
+        </div>
+      </form>
+
+      <ConfirmationModal 
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        onConfirm={handleFinalConfirm}
+        memberData={formData}
+        pricingData={pricing}
+        photoPreview={photoPreview}
+        loading={loading}
+      />
+
+      {isCameraOpen && (
+        <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-[100] p-4">
+          <div className="bg-dark-300 p-4 rounded-xl w-full max-w-md space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-white font-semibold">Take Photo</h2>
+              <button type="button" onClick={stopCamera} className="p-2 rounded-lg bg-dark-200 text-gray-300"><X size={20} /></button>
+            </div>
+            <video ref={videoRef} autoPlay playsInline muted className="w-full rounded-lg bg-black" style={{ transform: facingMode === "user" ? "scaleX(-1)" : "none" }} />
+            <div className="flex justify-center gap-4">
+              <button type="button" onClick={switchCamera} className="p-3 rounded-full bg-dark-200 text-gray-300"><RefreshCw size={20} /></button>
+              <button type="button" onClick={capturePhoto} className="w-16 h-16 rounded-full bg-white flex items-center justify-center"><div className="w-12 h-12 rounded-full border-4 border-primary-600" /></button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

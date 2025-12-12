@@ -19,7 +19,8 @@ const MemberSchema = new mongoose.Schema({
     focus_note: { type: String, default: '' },
     isFirstLogin: { type: Boolean, default: true },
     status: { type: String, enum: ['Active', 'Expired'], default: 'Active' },
-    createdBy: { type: String, required: true }
+    createdBy: { type: String, required: true },
+    iscancel:{type:Boolean,default:false},
 }, { timestamps: true });
 
 module.exports = mongoose.model('Member', MemberSchema);

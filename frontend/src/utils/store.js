@@ -9,12 +9,13 @@ export const Store = create((set, get) => ({
   errorMessage: null,
   memberProfile: null,
   profileLoading: false,
-
+  userList:[],
+  userListLoading: false,
   checkAuth: async () => {
     set({ checking: true });
     try {
       const res = await api.get("/api/auth/check");
-      const userData = res.data.user || null;    
+      const userData = res.data.user || null;
       console.log(userData);
       if (userData) {
         set({
@@ -41,7 +42,6 @@ export const Store = create((set, get) => ({
       });
     }
   },
-
   login: async (credentials) => {
     set({ isLogging: true, errorMessage: null });
 
@@ -86,7 +86,6 @@ export const Store = create((set, get) => ({
       return { success: false, message: errorMsg };
     }
   },
-
   logout: async () => {
     try {
       await api.post("/api/auth/logout");
@@ -100,9 +99,7 @@ export const Store = create((set, get) => ({
       memberProfile: null
     });
   },
-
   clearError: () => set({ errorMessage: null }),
-
   getMemberProfile: async () => {
     set({ profileLoading: true });
     try {
@@ -119,5 +116,99 @@ export const Store = create((set, get) => ({
       set({ profileLoading: false });
       return null;
     }
-  }
+  },
+  // getAllUser: async () => {
+  //   try {
+  //     const res = await api.get("/api/admin/all");
+  //     console.log(res.data)
+  //     set({userList:res.data.data});
+  //   } catch (error) {
+  //     console.log(error)
+  //   }
+  // },
+  cancelUserMembership:async(id)=>{
+    try {
+      const res = await api.put("/api/admin/cancel",id)
+      console.log(res.data);
+    } catch (error) {
+      console.log(error)
+    }
+  },
+  getAllUser: async () => {
+    set({ userListLoading: true });
+    try {
+      const response = await api.get("/api/admin/all");
+      if (response.data?.success) {
+        set({ userList: response.data.data || [], userListLoading: false });
+        return response.data.data;
+      }
+      set({ userListLoading: false });
+      return [];
+    } catch (error) {
+      console.error("Get users error:", error);
+      set({ userListLoading: false });
+      return [];
+    }
+  },
+  addUser: async (formData) => {
+    try {
+      console.log(formData);
+      const response = await api.post("/api/admin/add", formData);
+
+      if (response.data?.success) {
+        // Refresh user list after adding
+        get().getAllUser();
+        return { success: true, data: response.data.data };
+      }
+
+      return { success: false, message: response.data?.message || "Failed to add member" };
+    } catch (error) {
+      console.error("Add user error:", error);
+      return {
+        success: false,
+        message: error.response?.data?.message || "Server error",
+      };
+    }
+  },
+  updateUser: async (id, formData) => {
+    try {
+      const response = await api.put(`/api/admin/update/${id}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      if (response.data?.success) {
+        get().getAllUser();
+        return { success: true, data: response.data.data };
+      }
+
+      return { success: false, message: response.data?.message || "Failed to update member" };
+    } catch (error) {
+      console.error("Update user error:", error);
+      return {
+        success: false,
+        message: error.response?.data?.message || "Server error",
+      };
+    }
+  },
+  deleteUser: async (id) => {
+    try {
+      const response = await api.delete(`/api/admin/delete/${id}`);
+
+      if (response.data?.success) {
+        get().getAllUser();
+        return { success: true };
+      }
+
+      return { success: false, message: response.data?.message || "Failed to delete member" };
+    } catch (error) {
+      console.error("Delete user error:", error);
+      return {
+        success: false,
+        message: error.response?.data?.message || "Server error",
+      };
+    }
+  },
+
 }));

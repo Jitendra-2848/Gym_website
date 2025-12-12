@@ -2,10 +2,13 @@
   "name": "sanatan-gym-backend",
   "version": "1.0.0",
   "main": "server.js",
-  "scripts": { "start": "node server.js", "dev2": "nodemon server.js" },
+  "scripts": {
+    "start": "node server.js",
+    "dev2": "nodemon server.js"
+  },
   "dependencies": {
     "bcrypt": "^5.1.1",
-    "cloudinary": "^1.41.0",
+    "cloudinary": "^1.41.3",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
@@ -20,5 +23,7 @@
     "multer-storage-cloudinary": "^4.0.0",
     "xss-clean": "^0.1.4"
   },
-  "devDependencies": { "nodemon": "^3.0.2" }
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
 }

@@ -26,6 +26,7 @@ const login = async (req, res) => {
             const token = jwt.sign(
                 {
                     hash: adminData.hash,
+                    id:adminData.id,
                     role: 'admin'
                 },
                 process.env.JWT_SECRET,
@@ -120,7 +121,6 @@ const check = async (req, res) => {
         if (!req.user) {
             return res.json({ user: null });
         }
-        console.log(req.user);
         if (req.user.role === 'admin') {
             const isValidAdmin = await bcrypt.compare(
                 process.env.ADMIN1_PASSWORD,

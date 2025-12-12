@@ -60,7 +60,6 @@ const AppRoutes = () => {
 
   useEffect(() => {
     checkAuth();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // only run once on mount
 
   return (
@@ -90,8 +89,7 @@ const AppRoutes = () => {
           <AdminProtectedRoute>
             <AdminLayout />
           </AdminProtectedRoute>
-        }
-      >
+        }>
         <Route index element={<Dashboard />} />
         <Route path="add" element={<AddUser />} />
         <Route path="list" element={<UserList />} />
