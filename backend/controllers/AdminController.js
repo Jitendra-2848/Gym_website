@@ -1,8 +1,8 @@
 const Member = require('../model/Member');
 const bcrypt = require('bcrypt');
-const { getEndDate, sanitize } = require('../utils/helpers');
+const { sanitize } = require('../utils/helpers');
 const { deleteFromCloudinary } = require('../config/cloudinary');
-
+const { decryptPassword } = require('../utils/crypto');
 // ADD MEMBER
 const addMember = async (req, res) => {
     try {
@@ -84,11 +84,11 @@ const getuserprofile = async (req, res) => {
     try {
         const { id } = req.params;
         const data = await Member.findById(id).select('-password');
-        
+
         if (!data) {
             return res.status(404).json({ success: false, message: "Member not found" });
         }
-        
+
         return res.status(200).json({ success: true, data: data });
     } catch (error) {
         console.error(error);
@@ -106,8 +106,8 @@ const cancelMembership = async (req, res) => {
         }
 
         const data = await Member.findByIdAndUpdate(
-            id, 
-            { iscancel: true }, 
+            id,
+            { iscancel: true },
             { new: true }
         );
 
@@ -123,11 +123,20 @@ const cancelMembership = async (req, res) => {
     }
 };
 
-// UPDATE MEMBER
 const updateuser = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, mobile, email, start_date, end_date, focus_note, iscancel } = req.body;
+        const {
+            name,
+            mobile,
+            email,
+            start_date,
+            end_date,
+            focus_note,
+            iscancel,
+            encryptedPassword,  // New: Encrypted password from frontend
+            resetPassword       // New: Boolean flag
+        } = req.body;
 
         // Find member
         const member = await Member.findById(id);
@@ -139,38 +148,64 @@ const updateuser = async (req, res) => {
         let photoUrl = member.profile_pic;
 
         if (req.fileUrl) {
-            // New image uploaded - delete old one
             if (member.profile_pic) {
                 await deleteFromCloudinary(member.profile_pic);
             }
             photoUrl = req.fileUrl;
         }
 
-        // Update fields
+        // Build update object
         const updateData = {
-            name: name ? sanitize(name) : member.name,
+            name: name ? name.trim() : member.name,
             mobile: mobile || member.mobile,
-            email: email !== undefined ? sanitize(email) : member.email,
+            email: email !== undefined ? email.trim() : member.email,
             start_date: start_date || member.start_date,
             end_date: end_date || member.end_date,
-            focus_note: focus_note !== undefined ? sanitize(focus_note) : member.focus_note,
+            focus_note: focus_note !== undefined ? focus_note.trim() : member.focus_note,
             profile_pic: photoUrl
         };
 
         // Handle cancel status
         if (iscancel !== undefined) {
-            updateData.iscancel = iscancel === true || iscancel === 'true' || iscancel === false || iscancel === 'false' 
-                ? (iscancel === true || iscancel === 'true') 
-                : member.iscancel;
+            updateData.iscancel = iscancel === true || iscancel === 'true';
         }
 
-        const updatedMember = await Member.findByIdAndUpdate(id, updateData, { new: true }).select('-password');
+        // ✅ HANDLE PASSWORD CHANGE
+        if (resetPassword === true && encryptedPassword) {
+            // 1. Decrypt the password
+            const plainPassword = decryptPassword(encryptedPassword);
 
-        return res.status(200).json({ 
-            success: true, 
-            message: "Member updated successfully",
-            data: updatedMember 
+            if (!plainPassword || plainPassword.length < 4) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Invalid password. Must be at least 4 characters."
+                });
+            }
+
+            // 2. Hash with bcrypt
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash(plainPassword, salt);
+
+            // 3. Update password and set isFirstLogin to true
+            updateData.password = hashedPassword;
+            updateData.isFirstLogin = true; // Force user to change on next login
+        }
+
+        const updatedMember = await Member.findByIdAndUpdate(
+            id,
+            updateData,
+            { new: true }
+        ).select('-password');
+        member.isFirstLogin = true;
+        await member.save();
+        return res.status(200).json({
+            success: true,
+            message: resetPassword
+                ? "Member updated with new password. User must change it on first login."
+                : "Member updated successfully",
+            data: updatedMember
         });
+
 
     } catch (error) {
         console.error("Update Error:", error);
@@ -203,11 +238,11 @@ const deletemember = async (req, res) => {
     }
 };
 
-module.exports = { 
-    addMember, 
-    getAllMembers, 
+module.exports = {
+    addMember,
+    getAllMembers,
     getuserprofile,
-    cancelMembership, 
-    updateuser, 
-    deletemember 
+    cancelMembership,
+    updateuser,
+    deletemember
 };

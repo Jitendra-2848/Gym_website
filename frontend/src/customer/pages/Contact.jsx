@@ -1,16 +1,8 @@
 // src/customer/pages/Contact.jsx
-import React, { useState } from 'react'
+import React from 'react'
 import { MapPin, Phone, Mail, Clock, MessageSquare } from 'lucide-react'
 
 const Contact = () => {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    subject: '',
-    message: ''
-  })
-
   const contactInfo = [
     {
       icon: MapPin,
@@ -26,8 +18,8 @@ const Contact = () => {
     {
       icon: Mail,
       title: 'Email Us',
-      details: ['info@fitgym.com', 'support@fitgym.com'],
-      links: ['mailto:info@fitgym.com', 'mailto:support@fitgym.com']
+      details: ['info@sanatangym.com', 'support@sanatangym.com'],
+      links: ['mailto:info@sanatangym.com', 'mailto:support@sanatangym.com']
     },
     {
       icon: Clock,
@@ -41,16 +33,12 @@ const Contact = () => {
 
       {/* ================= HERO ================= */}
       <section className="py-16 md:py-20 relative overflow-hidden">
-        <div className="absolute inset-0 bg-orange-glow opacity-30"></div>
+        <div className="absolute inset-0 bg-orange-glow opacity-30" />
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          {/* Contact Badge with Shine */}
-          <div className="relative inline-flex items-center gap-2 bg-primary-600/20 border border-primary-500/30 rounded-full px-4 py-2 mb-6 overflow-hidden group mx-auto">
-            <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full
-                            bg-gradient-to-r from-transparent via-white/10 to-transparent
-                            transition-transform duration-700"></div>
-            <MessageSquare size={16} className="text-primary-500 relative z-10" />
-            <span className="text-primary-400 font-medium text-sm relative z-10">
+          <div className="inline-flex items-center gap-2 bg-primary-600/20 border border-primary-500/30 rounded-full px-4 py-2 mb-6">
+            <MessageSquare size={16} className="text-primary-500" />
+            <span className="text-primary-400 font-medium text-sm">
               Contact Us
             </span>
           </div>
@@ -60,7 +48,7 @@ const Contact = () => {
           </h1>
 
           <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-            Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible.
+            Have questions? We’d love to hear from you. Reach out anytime.
           </p>
         </div>
       </section>
@@ -72,14 +60,16 @@ const Contact = () => {
             {contactInfo.map((info, index) => (
               <div
                 key={index}
-                className="card-dark p-6 text-center group hover:border-primary-500/50 transition-colors"
+                className="card-dark p-6 text-center h-full hover:border-primary-500/50 transition-colors"
               >
-                <div className="w-14 h-14 rounded-2xl bg-primary-600/20 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary-600 transition-colors">
-                  <info.icon className="text-primary-500 group-hover:text-white transition-colors" size={24} />
+                <div className="w-14 h-14 rounded-2xl bg-primary-600/20 flex items-center justify-center mx-auto mb-4">
+                  <info.icon className="text-primary-500" size={24} />
                 </div>
+
                 <h3 className="font-heading text-lg font-bold text-white mb-3">
                   {info.title}
                 </h3>
+
                 <div className="space-y-1">
                   {info.details.map((detail, idx) =>
                     info.links ? (
@@ -91,7 +81,9 @@ const Contact = () => {
                         {detail}
                       </a>
                     ) : (
-                      <p key={idx} className="text-gray-400">{detail}</p>
+                      <p key={idx} className="text-gray-400">
+                        {detail}
+                      </p>
                     )
                   )}
                 </div>
@@ -104,59 +96,53 @@ const Contact = () => {
       {/* ================= MAP + QUICK CONTACT ================= */}
       <section className="py-16 bg-dark-400">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex gap-12 items-stretch">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-stretch">
 
-            {/* MAP – BORDER HOVER ONLY */}
-            <div className="flex-1">
-              <div className="card-dark h-full min-h-[380px] overflow-hidden
-                              transition-colors duration-300
-                              hover:border-primary-500/50">
-                <iframe
-                  title="FITGYM Location"
-                  src="https://www.google.com/maps?q=Mumbai%20India&output=embed"
-                  className="w-full h-full border-0"
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                />
-              </div>
+            {/* MAP */}
+            <div className="card-dark overflow-hidden min-h-[380px] hover:border-primary-500/50 transition-colors">
+              <iframe
+                title="Sanatan Gym Location"
+                src="https://www.google.com/maps?q=Mumbai%20India&output=embed"
+                className="w-full h-full border-0"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
             </div>
 
             {/* QUICK CONTACT */}
-            <div className="flex-1">
-              <div className="card-dark p-6 h-full min-h-[380px]">
-                <h3 className="font-heading text-lg font-bold text-white mb-6">
-                  Quick Contact
-                </h3>
+            <div className="card-dark p-6 flex flex-col justify-start">
+              <h3 className="font-heading text-lg font-bold text-white mb-6">
+                Quick Contact
+              </h3>
 
-                <div className="space-y-4">
-                  <a
-                    href="tel:+919876543210"
-                    className="flex items-center gap-4 p-4 rounded-xl bg-dark-300 hover:bg-dark-100 transition-colors group"
-                  >
-                    <div className="w-12 h-12 rounded-full bg-primary-600/20 flex items-center justify-center group-hover:bg-primary-600 transition-colors">
-                      <Phone className="text-primary-500 group-hover:text-white transition-colors" size={20} />
-                    </div>
-                    <div>
-                      <p className="text-white font-medium">Call FITGYM</p>
-                      <p className="text-gray-400 text-sm">+91 98765 43210</p>
-                    </div>
-                  </a>
+              <div className="space-y-4">
+                <a
+                  href="tel:+919876543210"
+                  className="flex items-center gap-4 p-4 rounded-xl bg-dark-300 hover:bg-dark-100 transition-colors"
+                >
+                  <div className="w-12 h-12 rounded-full bg-primary-600/20 flex items-center justify-center">
+                    <Phone className="text-primary-500" size={20} />
+                  </div>
+                  <div>
+                    <p className="text-white font-medium">Call Sanatan Gym</p>
+                    <p className="text-gray-400 text-sm">+91 98765 43210</p>
+                  </div>
+                </a>
 
-                  <a
-                    href="https://wa.me/919876543210"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-4 p-4 rounded-xl bg-dark-300 hover:bg-dark-100 transition-colors group"
-                  >
-                    <div className="w-12 h-12 rounded-full bg-green-600/20 flex items-center justify-center group-hover:bg-green-600 transition-colors">
-                      <MessageSquare className="text-green-500 group-hover:text-white transition-colors" size={20} />
-                    </div>
-                    <div>
-                      <p className="text-white font-medium">WhatsApp FITGYM</p>
-                      <p className="text-gray-400 text-sm">Chat with us instantly</p>
-                    </div>
-                  </a>
-                </div>
+                <a
+                  href="https://wa.me/919876543210"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-4 p-4 rounded-xl bg-dark-300 hover:bg-dark-100 transition-colors"
+                >
+                  <div className="w-12 h-12 rounded-full bg-green-600/20 flex items-center justify-center">
+                    <MessageSquare className="text-green-500" size={20} />
+                  </div>
+                  <div>
+                    <p className="text-white font-medium">WhatsApp Sanatan Gym</p>
+                    <p className="text-gray-400 text-sm">Chat with us instantly</p>
+                  </div>
+                </a>
               </div>
             </div>
 

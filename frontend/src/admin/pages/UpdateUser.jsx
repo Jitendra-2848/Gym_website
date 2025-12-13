@@ -1,23 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
-  Edit,
-  CheckCircle,
-  AlertCircle,
-  ArrowLeft,
-  Plus,
-  Camera,
-  X,
-  RefreshCw,
-  Trash2,
-  AlertTriangle,
-  User,
-  ChevronDown,
-  Upload,
-  Ban,
-  UserCheck,
+  Edit, CheckCircle, AlertCircle, ArrowLeft, Plus, Camera, X, RefreshCw,
+  Trash2, AlertTriangle, User, ChevronDown, Upload, Ban, UserCheck,
+  Lock, Eye, EyeOff, Key, Shield
 } from "lucide-react";
 import { Store } from "../../utils/store";
+import { encryptPassword } from "../../utils/crypto";
 import RenewalModal from "../components/RenewalModal";
 
 const PRICING_TIERS = [
@@ -30,35 +19,37 @@ const PRICING_TIERS = [
 
 const DEFAULT_AVATAR = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 
-// ⚡ IMAGE COMPRESSION HELPER
 const compressImage = (base64, maxWidth = 400, quality = 0.7) => {
   return new Promise((resolve) => {
     const img = new Image();
     img.src = base64;
-
     img.onload = () => {
       const canvas = document.createElement("canvas");
-
       let width = img.width;
       let height = img.height;
-
-      // Resize if too large
       if (width > maxWidth) {
         height = (height * maxWidth) / width;
         width = maxWidth;
       }
-
       canvas.width = width;
       canvas.height = height;
-
       const ctx = canvas.getContext("2d");
       ctx.drawImage(img, 0, 0, width, height);
       const compressed = canvas.toDataURL("image/jpeg", quality);
       resolve(compressed);
     };
-
     img.onerror = () => resolve(base64);
   });
+};
+
+// Generate Random Password
+const generatePassword = (length = 8) => {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+  let password = '';
+  for (let i = 0; i < length; i++) {
+    password += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return password;
 };
 
 const UpdateUser = () => {
@@ -66,7 +57,6 @@ const UpdateUser = () => {
   const navigate = useNavigate();
   const { userList, getAllUser, updateUser, cancelUserMembership } = Store();
 
-  // Refs
   const fileInputRef = useRef(null);
   const videoRef = useRef(null);
 
@@ -81,13 +71,13 @@ const UpdateUser = () => {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showPhotoOptions, setShowPhotoOptions] = useState(false);
 
-  // Camera States
+  // Camera
   const [hasCamera, setHasCamera] = useState(false);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [videoStream, setVideoStream] = useState(null);
   const [facingMode, setFacingMode] = useState("user");
 
-  // Photo State
+  // Photo
   const [photoPreview, setPhotoPreview] = useState(null);
   const [photoBase64, setPhotoBase64] = useState(null);
 
@@ -99,16 +89,20 @@ const UpdateUser = () => {
   const [endDate, setEndDate] = useState("");
   const [focusNote, setFocusNote] = useState("");
 
-  // Renewal States
+  // ✅ PASSWORD CHANGE STATES
+  const [changePassword, setChangePassword] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
+  // Renewal
   const [monthsToAdd, setMonthsToAdd] = useState(0);
   const [applyDiscount, setApplyDiscount] = useState(false);
   const [discountAmount, setDiscountAmount] = useState(0);
 
-  // Find Member
   const member = userList.find((m) => m._id === id);
   const isCancelled = member?.iscancel === true;
 
-  // 1. CHECK CAMERA & FETCH DATA
+  // Init
   useEffect(() => {
     const init = async () => {
       try {
@@ -117,7 +111,6 @@ const UpdateUser = () => {
       } catch (e) {
         setHasCamera(false);
       }
-
       setFetching(true);
       await getAllUser();
       setFetching(false);
@@ -125,7 +118,7 @@ const UpdateUser = () => {
     init();
   }, [id]);
 
-  // 2. POPULATE FORM WHEN MEMBER LOADS
+  // Populate Form
   useEffect(() => {
     if (member) {
       setName(member.name || "");
@@ -135,11 +128,10 @@ const UpdateUser = () => {
       setEndDate(member.end_date ? member.end_date.split("T")[0] : "");
       setFocusNote(member.focus_note || "");
       setPhotoPreview(member.profile_pic || null);
-      // Don't set photoBase64 here - only set when user changes photo
     }
   }, [member]);
 
-  // 3. CLEANUP CAMERA ON UNMOUNT
+  // Cleanup Camera
   useEffect(() => {
     return () => {
       if (videoStream) {
@@ -148,19 +140,16 @@ const UpdateUser = () => {
     };
   }, [videoStream]);
 
-  // --- RENEWAL CALCULATION ---
+  // Renewal Calculation
   const calculateRenewal = () => {
     const months = parseInt(monthsToAdd) || 0;
-    if (months === 0)
-      return { subTotal: 0, finalTotal: 0, newEndDate: "", pricePerMonth: 0 };
+    if (months === 0) return { subTotal: 0, finalTotal: 0, newEndDate: "", pricePerMonth: 0 };
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-
     const currentEnd = endDate ? new Date(endDate) : today;
     const isExpired = currentEnd < today || isCancelled;
     const startFrom = isExpired ? today : currentEnd;
-
     const newEnd = new Date(startFrom);
     newEnd.setMonth(newEnd.getMonth() + months);
 
@@ -178,21 +167,15 @@ const UpdateUser = () => {
 
   const renewal = calculateRenewal();
 
-  // --- PHOTO HANDLERS (FIXED WITH COMPRESSION) ---
-
+  // Photo Handlers
   const handlePhotoUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
     setShowPhotoOptions(false);
-
     const reader = new FileReader();
     reader.onload = async (event) => {
       const base64 = event.target.result;
-
-      // Compress the image
       const compressed = await compressImage(base64, 400, 0.7);
-
       setPhotoPreview(compressed);
       setPhotoBase64(compressed);
     };
@@ -205,23 +188,15 @@ const UpdateUser = () => {
     setShowPhotoOptions(false);
   };
 
-  // --- CAMERA HANDLERS ---
-
+  // Camera Handlers
   const openCamera = async (mode = "user") => {
     try {
-      if (videoStream) {
-        videoStream.getTracks().forEach((t) => t.stop());
-      }
-
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: mode },
-      });
-
+      if (videoStream) videoStream.getTracks().forEach((t) => t.stop());
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: mode } });
       setVideoStream(stream);
       setFacingMode(mode);
       setIsCameraOpen(true);
       setShowPhotoOptions(false);
-
       setTimeout(() => {
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
@@ -229,36 +204,25 @@ const UpdateUser = () => {
         }
       }, 100);
     } catch (err) {
-      console.error("Camera error:", err);
       setError("Cannot access camera");
     }
   };
 
-  const switchCamera = () => {
-    const newMode = facingMode === "user" ? "environment" : "user";
-    openCamera(newMode);
-  };
+  const switchCamera = () => openCamera(facingMode === "user" ? "environment" : "user");
 
   const stopCamera = () => {
-    if (videoStream) {
-      videoStream.getTracks().forEach((t) => t.stop());
-    }
+    if (videoStream) videoStream.getTracks().forEach((t) => t.stop());
     setVideoStream(null);
     setIsCameraOpen(false);
   };
 
-  // FIXED: Capture with compression
   const capturePhoto = () => {
     if (!videoRef.current) return;
-
     const video = videoRef.current;
     const canvas = document.createElement("canvas");
-
-    // Resize to max 400px
     const maxSize = 400;
     let width = video.videoWidth;
     let height = video.videoHeight;
-
     if (width > height && width > maxSize) {
       height = (height * maxSize) / width;
       width = maxSize;
@@ -266,29 +230,28 @@ const UpdateUser = () => {
       width = (width * maxSize) / height;
       height = maxSize;
     }
-
     canvas.width = width;
     canvas.height = height;
-
     const ctx = canvas.getContext("2d");
-
     if (facingMode === "user") {
       ctx.translate(canvas.width, 0);
       ctx.scale(-1, 1);
     }
-
     ctx.drawImage(video, 0, 0, width, height);
-
-    // Compress to 70% quality
     const base64 = canvas.toDataURL("image/jpeg", 0.7);
     setPhotoPreview(base64);
     setPhotoBase64(base64);
-
     stopCamera();
   };
 
-  // --- SUBMIT HANDLERS ---
+  // ✅ GENERATE PASSWORD
+  const handleGeneratePassword = () => {
+    const pwd = generatePassword(8);
+    setNewPassword(pwd);
+    setShowPassword(true);
+  };
 
+  // Submit
   const handleSubmit = async () => {
     if (!name.trim()) {
       setError("Name is required");
@@ -296,6 +259,12 @@ const UpdateUser = () => {
     }
     if (!mobile.trim() || mobile.length !== 10) {
       setError("Valid 10-digit mobile is required");
+      return;
+    }
+
+    // ✅ VALIDATE PASSWORD
+    if (changePassword && newPassword.length < 4) {
+      setError("Password must be at least 4 characters");
       return;
     }
 
@@ -321,19 +290,30 @@ const UpdateUser = () => {
         end_date: parseInt(monthsToAdd) > 0 ? renewal.newEndDate : endDate,
       };
 
-      // Only add photo if user changed it (photoBase64 is set)
       if (photoBase64) {
         updateData.profile_pic = photoBase64;
       }
 
-      // Un-cancel if reactivating
       if (isCancelled && parseInt(monthsToAdd) > 0) {
         updateData.iscancel = false;
       }
+
+      // ✅ ENCRYPT & ADD PASSWORD
+      if (changePassword && newPassword) {
+        const encrypted = encryptPassword(newPassword);
+        if (encrypted) {
+          updateData.encryptedPassword = encrypted;
+          updateData.resetPassword = true;
+        }
+      }
+
       const result = await updateUser(id, updateData);
+      
       if (result?.success) {
         setSuccess(true);
         setShowRenewalModal(false);
+        setChangePassword(false);
+        setNewPassword("");
         await getAllUser();
         setTimeout(() => navigate("/admin/list"), 1500);
       } else {
@@ -367,24 +347,22 @@ const UpdateUser = () => {
     }
   };
 
-  // --- RENDER ---
-
+  // Loading State
   if (fetching) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="w-10 h-10 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-4 border-primary-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
+  // Not Found
   if (!member) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen text-white">
         <User size={64} className="mb-4 text-gray-500" />
         <h2 className="text-2xl font-bold mb-4">Member Not Found</h2>
-        <button onClick={() => navigate("/admin/list")} className="btn-primary">
-          Back
-        </button>
+        <button onClick={() => navigate("/admin/list")} className="btn-primary">Back</button>
       </div>
     );
   }
@@ -393,10 +371,7 @@ const UpdateUser = () => {
   if (isCancelled) {
     return (
       <div className="max-w-4xl mx-auto pt-6 pb-12 px-4">
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-gray-400 hover:text-white mb-6"
-        >
+        <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-gray-400 hover:text-white mb-6">
           <ArrowLeft size={20} /> Back
         </button>
 
@@ -448,11 +423,7 @@ const UpdateUser = () => {
                   <span>Total</span>
                   <span className="text-green-400 font-bold">₹{renewal.finalTotal}</span>
                 </div>
-                <button
-                  onClick={handleSubmit}
-                  disabled={loading}
-                  className="w-full py-3 bg-green-600 text-white rounded-xl mt-4 disabled:opacity-50"
-                >
+                <button onClick={handleSubmit} disabled={loading} className="w-full py-3 bg-green-600 text-white rounded-xl mt-4 disabled:opacity-50">
                   {loading ? "Processing..." : "Reactivate"}
                 </button>
               </>
@@ -490,35 +461,17 @@ const UpdateUser = () => {
         <div className="fixed inset-0 bg-black z-[100] flex flex-col">
           <div className="flex items-center justify-between p-4 bg-black/50">
             <h3 className="text-white font-bold">Take Photo</h3>
-            <button onClick={stopCamera} className="p-2 text-white">
-              <X size={24} />
-            </button>
+            <button onClick={stopCamera} className="p-2 text-white"><X size={24} /></button>
           </div>
-
           <div className="flex-1 flex items-center justify-center bg-black">
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              muted
-              className="max-w-full max-h-full"
-              style={{ transform: facingMode === "user" ? "scaleX(-1)" : "none" }}
-            />
+            <video ref={videoRef} autoPlay playsInline muted className="max-w-full max-h-full" style={{ transform: facingMode === "user" ? "scaleX(-1)" : "none" }} />
           </div>
-
           <div className="p-6 bg-black/50 flex items-center justify-center gap-8">
-            <button onClick={switchCamera} className="p-4 bg-white/20 rounded-full text-white">
-              <RefreshCw size={24} />
+            <button onClick={switchCamera} className="p-4 bg-white/20 rounded-full text-white"><RefreshCw size={24} /></button>
+            <button onClick={capturePhoto} className="w-20 h-20 rounded-full bg-white border-4 border-gray-300 flex items-center justify-center">
+              <div className="w-16 h-16 rounded-full bg-white border-4 border-primary-500" />
             </button>
-            <button
-              onClick={capturePhoto}
-              className="w-20 h-20 rounded-full bg-white border-4 border-gray-300 flex items-center justify-center"
-            >
-              <div className="w-16 h-16 rounded-full bg-white border-4 border-primary-500"></div>
-            </button>
-            <button onClick={stopCamera} className="p-4 bg-red-500/50 rounded-full text-white">
-              <X size={24} />
-            </button>
+            <button onClick={stopCamera} className="p-4 bg-red-500/50 rounded-full text-white"><X size={24} /></button>
           </div>
         </div>
       )}
@@ -549,9 +502,7 @@ const UpdateUser = () => {
             <h3 className="text-xl font-bold text-white mb-2">Cancel Membership?</h3>
             <p className="text-gray-400 mb-6">This will deactivate {name}'s account.</p>
             <div className="flex gap-3">
-              <button onClick={() => setShowCancelModal(false)} className="flex-1 py-3 bg-dark-300 text-gray-300 rounded-xl">
-                No
-              </button>
+              <button onClick={() => setShowCancelModal(false)} className="flex-1 py-3 bg-dark-300 text-gray-300 rounded-xl">No</button>
               <button onClick={handleCancel} disabled={loading} className="flex-1 py-3 bg-red-600 text-white rounded-xl">
                 {loading ? "Cancelling..." : "Yes, Cancel"}
               </button>
@@ -573,9 +524,7 @@ const UpdateUser = () => {
       {error && (
         <div className="mb-4 p-3 bg-red-500/20 text-red-400 rounded-lg flex items-center gap-2">
           <AlertCircle size={18} /> {error}
-          <button onClick={() => setError("")} className="ml-auto">
-            <X size={16} />
-          </button>
+          <button onClick={() => setError("")} className="ml-auto"><X size={16} /></button>
         </div>
       )}
       {success && (
@@ -587,6 +536,7 @@ const UpdateUser = () => {
       {/* Main Grid */}
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
+          
           {/* Personal Details */}
           <div className="card-dark p-6">
             <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
@@ -603,38 +553,25 @@ const UpdateUser = () => {
                   >
                     <img src={photoPreview || DEFAULT_AVATAR} className="w-full h-full object-cover" alt="" />
                   </div>
-
                   {photoBase64 && (
-                    <button
-                      onClick={removePhoto}
-                      className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white"
-                    >
+                    <button onClick={removePhoto} className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white">
                       <X size={14} />
                     </button>
                   )}
                 </div>
-
                 <span className="text-xs text-gray-500 mt-2">Tap to change</span>
-
                 {showPhotoOptions && (
                   <div className="mt-2 bg-dark-200 rounded-xl border border-dark-100 overflow-hidden w-40 shadow-xl z-10">
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      className="w-full py-3 px-4 text-sm text-gray-300 hover:bg-dark-100 flex items-center gap-2"
-                    >
+                    <button onClick={() => fileInputRef.current?.click()} className="w-full py-3 px-4 text-sm text-gray-300 hover:bg-dark-100 flex items-center gap-2">
                       <Upload size={16} /> Upload Photo
                     </button>
                     {hasCamera && (
-                      <button
-                        onClick={() => openCamera("user")}
-                        className="w-full py-3 px-4 text-sm text-gray-300 hover:bg-dark-100 flex items-center gap-2"
-                      >
+                      <button onClick={() => openCamera("user")} className="w-full py-3 px-4 text-sm text-gray-300 hover:bg-dark-100 flex items-center gap-2">
                         <Camera size={16} /> Take Photo
                       </button>
                     )}
                   </div>
                 )}
-
                 <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
               </div>
 
@@ -647,13 +584,7 @@ const UpdateUser = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="text-gray-400 text-sm mb-1 block">Mobile *</label>
-                    <input
-                      value={mobile}
-                      onChange={(e) => setMobile(e.target.value)}
-                      className="input-dark w-full"
-                      maxLength={10}
-                      placeholder="10 digits"
-                    />
+                    <input value={mobile} onChange={(e) => setMobile(e.target.value)} className="input-dark w-full" maxLength={10} placeholder="10 digits" />
                   </div>
                   <div>
                     <label className="text-gray-400 text-sm mb-1 block">Email</label>
@@ -662,15 +593,99 @@ const UpdateUser = () => {
                 </div>
                 <div>
                   <label className="text-gray-400 text-sm mb-1 block">Focus / Notes</label>
-                  <input
-                    value={focusNote}
-                    onChange={(e) => setFocusNote(e.target.value)}
-                    className="input-dark w-full"
-                    placeholder="e.g., Weight loss"
-                  />
+                  <input value={focusNote} onChange={(e) => setFocusNote(e.target.value)} className="input-dark w-full" placeholder="e.g., Weight loss" />
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* ✅ PASSWORD CHANGE SECTION */}
+          <div className="card-dark p-6">
+            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+              <Lock className="text-yellow-500" /> Security
+            </h3>
+
+            {/* Checkbox */}
+            <label className="flex items-center gap-3 cursor-pointer group">
+              <div className="relative">
+                <input
+                  type="checkbox"
+                  checked={changePassword}
+                  onChange={(e) => {
+                    setChangePassword(e.target.checked);
+                    if (!e.target.checked) {
+                      setNewPassword("");
+                      setShowPassword(false);
+                    }
+                  }}
+                  className="sr-only"
+                />
+                <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${changePassword ? 'bg-yellow-500 border-yellow-500' : 'border-gray-600 group-hover:border-gray-500'}`}>
+                  {changePassword && <CheckCircle size={14} className="text-black" />}
+                </div>
+              </div>
+              <div>
+                <span className="text-white font-medium">Reset Password</span>
+                <p className="text-gray-500 text-xs">Set a new password for this member</p>
+              </div>
+            </label>
+
+            {/* Password Input */}
+            {changePassword && (
+              <div className="mt-4 p-4 bg-dark-400/50 rounded-xl border border-yellow-500/20 space-y-4">
+                <div className="flex items-center gap-2 text-yellow-500/80 text-sm">
+                  <Shield size={16} />
+                  <span>Password will be encrypted before sending</span>
+                </div>
+
+                <div className="relative">
+                  <Key className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Enter new password"
+                    className="input-dark w-full pl-12 pr-12"
+                    minLength={4}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={handleGeneratePassword}
+                    className="px-4 py-2 bg-yellow-600/20 text-yellow-500 rounded-lg text-sm font-medium hover:bg-yellow-600/30 transition-all flex items-center gap-2"
+                  >
+                    <RefreshCw size={14} />
+                    Generate Random
+                  </button>
+
+                  {newPassword && (
+                    <span className={`text-sm ${newPassword.length >= 4 ? 'text-green-500' : 'text-red-500'}`}>
+                      {newPassword.length >= 4 ? '✓ Valid' : `${4 - newPassword.length} more chars needed`}
+                    </span>
+                  )}
+                </div>
+
+                {newPassword && showPassword && (
+                  <div className="p-3 bg-dark-300 rounded-lg border border-gray-700">
+                    <p className="text-xs text-gray-500 mb-1">New Password (share with member):</p>
+                    <p className="text-white font-mono text-lg tracking-wider select-all">{newPassword}</p>
+                  </div>
+                )}
+
+                <p className="text-xs text-gray-500">
+                  * Member will be required to change this password on their next login.
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Extend Membership */}
@@ -698,12 +713,7 @@ const UpdateUser = () => {
             {parseInt(monthsToAdd) > 0 && (
               <div className="pt-4 border-t border-gray-700 space-y-3">
                 <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={applyDiscount}
-                    onChange={(e) => setApplyDiscount(e.target.checked)}
-                    className="w-5 h-5 accent-primary-500"
-                  />
+                  <input type="checkbox" checked={applyDiscount} onChange={(e) => setApplyDiscount(e.target.checked)} className="w-5 h-5 accent-primary-500" />
                   <span className="text-gray-300">Apply Discount?</span>
                 </label>
                 {applyDiscount && (
@@ -754,31 +764,38 @@ const UpdateUser = () => {
                   <span>Total</span>
                   <span className="text-primary-400">₹{renewal.finalTotal}</span>
                 </div>
-                <button
-                  onClick={handleSubmit}
-                  disabled={loading}
-                  className="w-full py-4 bg-primary-600 hover:bg-primary-700 text-white rounded-xl mt-4 font-bold disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  {loading ? "Processing..." : <><RefreshCw size={18} /> Confirm Renewal</>}
+
+                {/* Password indicator */}
+                {changePassword && newPassword && (
+                  <div className="flex items-center gap-2 text-yellow-500 text-sm pt-2">
+                    <Lock size={14} />
+                    <span>Password will be reset</span>
+                  </div>
+                )}
+
+                <button onClick={handleSubmit} disabled={loading} className="w-full py-4 bg-primary-600 hover:bg-primary-700 text-white rounded-xl mt-4 font-bold disabled:opacity-50 flex items-center justify-center gap-2">
+                  {loading ? "Processing..." : <><RefreshCw size={18} /> Confirm Update</>}
                 </button>
               </div>
             ) : (
               <div>
-                <p className="text-gray-500 text-center mb-4">No renewal</p>
-                <button
-                  onClick={handleSubmit}
-                  disabled={loading}
-                  className="w-full py-3 btn-primary bg-primary-600 hover:bg-primary-700 text-white rounded-xl disabled:opacity-50"
-                >
-                  {loading ? "Saving..." : "Update Info Only"}
+                <p className="text-gray-500 text-center mb-4">No renewal selected</p>
+
+                {/* Password indicator */}
+                {changePassword && newPassword && (
+                  <div className="flex items-center gap-2 text-yellow-500 text-sm mb-4 justify-center">
+                    <Lock size={14} />
+                    <span>Password will be reset</span>
+                  </div>
+                )}
+
+                <button onClick={handleSubmit} disabled={loading} className="w-full py-3 btn-primary bg-primary-600 hover:bg-primary-700 text-white rounded-xl disabled:opacity-50">
+                  {loading ? "Saving..." : "Update Member"}
                 </button>
               </div>
             )}
 
-            <button
-              onClick={() => setShowCancelModal(true)}
-              className="w-full py-3 mt-6 border border-red-900 text-red-500 rounded-xl hover:bg-red-900/20 flex items-center justify-center gap-2"
-            >
+            <button onClick={() => setShowCancelModal(true)} className="w-full py-3 mt-6 border border-red-900 text-red-500 rounded-xl hover:bg-red-900/20 flex items-center justify-center gap-2">
               <Trash2 size={16} /> Cancel Membership
             </button>
           </div>
