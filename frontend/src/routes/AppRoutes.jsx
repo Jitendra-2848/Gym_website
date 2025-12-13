@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { Store } from "../utils/store";
 
 import CustomerLayout from "../customer/components/CustomerLayout";
@@ -17,60 +17,50 @@ import UserList from "../admin/pages/UserList";
 import UserProfile from "../admin/pages/UserProfile";
 import UpdateUser from "../admin/pages/UpdateUser";
 
-// Global Loading Spinner Component
+// ================= LOADING =================
 const LoadingSpinner = () => (
   <div className="min-h-screen bg-dark-400 flex items-center justify-center">
     <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
   </div>
 );
 
-// Admin Protected Route
+// ================= PROTECTED ROUTES =================
 const AdminProtectedRoute = ({ children }) => {
   const user = Store((state) => state.user);
-  const checking = Store((state) => state.checking); // ✅ Use checking, not isLogging
+  const checking = Store((state) => state.checking);
 
-  if (checking) {
-    return <LoadingSpinner />;
-  }
-
-  if (!user || !user.role) return <Navigate to="/login" replace />;
-  if (user.role !== "admin") return <Navigate to="/" replace />;
+  if (checking) return <LoadingSpinner />;
+  if (!user || user.role !== "admin") return <Navigate to="/login" replace />;
 
   return children;
 };
 
-// Member Protected Route
 const MemberProtectedRoute = ({ children }) => {
   const user = Store((state) => state.user);
-  const checking = Store((state) => state.checking); // ✅ Use checking, not isLogging
+  const checking = Store((state) => state.checking);
 
-  if (checking) {
-    return <LoadingSpinner />;
-  }
-
+  if (checking) return <LoadingSpinner />;
   if (!user || !user.role) return <Navigate to="/login" replace />;
 
   return children;
 };
+
 const PublicOnlyRoute = ({ children }) => {
   const user = Store((state) => state.user);
   const checking = Store((state) => state.checking);
 
-  if (checking) {
-    return <LoadingSpinner />;
-  }
+  if (checking) return <LoadingSpinner />;
 
-  // If user is logged in, redirect them away from login page
   if (user && user.role) {
-    if (user.role === "admin") {
-      return <Navigate to="/admin" replace />;
-    }
-    return <Navigate to="/profile" replace />;
+    return user.role === "admin"
+      ? <Navigate to="/admin" replace />
+      : <Navigate to="/profile" replace />;
   }
 
   return children;
 };
 
+// ================= ROUTES =================
 const AppRoutes = () => {
   const checkAuth = Store((state) => state.checkAuth);
   const checking = Store((state) => state.checking);
@@ -79,21 +69,19 @@ const AppRoutes = () => {
     checkAuth();
   }, []);
 
-  // Optional: Show global loader while checking auth
-  // This prevents any route from rendering until auth is checked
-  if (checking) {
-    return <LoadingSpinner />;
-  }
+  if (checking) return <LoadingSpinner />;
 
   return (
     <Routes>
-      {/* Customer routes */}
+
+      {/* 🔹 CUSTOMER ROUTES (Navbar always visible) */}
       <Route element={<CustomerLayout />}>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
-        
-        {/* Login should redirect if already authenticated */}
+        <Route path="/set-password" element={<ResetPassword />} />
+
+        {/* ✅ LOGIN INSIDE CUSTOMER LAYOUT */}
         <Route
           path="/login"
           element={
@@ -102,8 +90,6 @@ const AppRoutes = () => {
             </PublicOnlyRoute>
           }
         />
-        
-        <Route path="/set-password" element={<ResetPassword />} />
 
         <Route
           path="/profile"
@@ -115,7 +101,7 @@ const AppRoutes = () => {
         />
       </Route>
 
-      {/* Admin routes */}
+      {/* 🔹 ADMIN ROUTES */}
       <Route
         path="/admin"
         element={
@@ -130,6 +116,7 @@ const AppRoutes = () => {
         <Route path="profile/:id" element={<UserProfile />} />
         <Route path="update/:id" element={<UpdateUser />} />
       </Route>
+
     </Routes>
   );
 };

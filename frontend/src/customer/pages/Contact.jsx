@@ -1,6 +1,6 @@
 // src/customer/pages/Contact.jsx
 import React, { useState } from 'react'
-import { MapPin, Phone, Mail, Clock, Send, CheckCircle, MessageSquare } from 'lucide-react'
+import { MapPin, Phone, Mail, Clock, MessageSquare } from 'lucide-react'
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -10,26 +10,6 @@ const Contact = () => {
     subject: '',
     message: ''
   })
-  const [submitted, setSubmitted] = useState(false)
-  const [loading, setLoading] = useState(false)
-
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
-  }
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    setLoading(true)
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    
-    setLoading(false)
-    setSubmitted(true)
-    setFormData({ name: '', email: '', phone: '', subject: '', message: '' })
-    
-    setTimeout(() => setSubmitted(false), 5000)
-  }
 
   const contactInfo = [
     {
@@ -46,8 +26,8 @@ const Contact = () => {
     {
       icon: Mail,
       title: 'Email Us',
-      details: ['info@sanatan.com', 'support@sanatangym.com'],
-      links: ['mailto:info@sanatangym.com', 'mailto:support@sanatangym.com']
+      details: ['info@fitgym.com', 'support@fitgym.com'],
+      links: ['mailto:info@fitgym.com', 'mailto:support@fitgym.com']
     },
     {
       icon: Clock,
@@ -57,15 +37,22 @@ const Contact = () => {
   ]
 
   return (
-    <div className="pt-20">
-      {/* Hero Section */}
-      <section className="py-20 md:py-32 relative overflow-hidden">
+    <div className="pt-16">
+
+      {/* ================= HERO ================= */}
+      <section className="py-16 md:py-20 relative overflow-hidden">
         <div className="absolute inset-0 bg-orange-glow opacity-30"></div>
-        
+
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center gap-2 bg-primary-600/20 border border-primary-500/30 rounded-full px-4 py-2 mb-6">
-            <MessageSquare size={16} className="text-primary-500" />
-            <span className="text-primary-400 font-medium text-sm">Contact Us</span>
+          {/* Contact Badge with Shine */}
+          <div className="relative inline-flex items-center gap-2 bg-primary-600/20 border border-primary-500/30 rounded-full px-4 py-2 mb-6 overflow-hidden group mx-auto">
+            <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full
+                            bg-gradient-to-r from-transparent via-white/10 to-transparent
+                            transition-transform duration-700"></div>
+            <MessageSquare size={16} className="text-primary-500 relative z-10" />
+            <span className="text-primary-400 font-medium text-sm relative z-10">
+              Contact Us
+            </span>
           </div>
 
           <h1 className="section-title text-white mb-6">
@@ -78,20 +65,25 @@ const Contact = () => {
         </div>
       </section>
 
-      {/* Contact Info Cards */}
+      {/* ================= INFO CARDS ================= */}
       <section className="py-12 bg-dark-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {contactInfo.map((info, index) => (
-              <div key={index} className="card-dark p-6 text-center group hover:border-primary-500/50">
+              <div
+                key={index}
+                className="card-dark p-6 text-center group hover:border-primary-500/50 transition-colors"
+              >
                 <div className="w-14 h-14 rounded-2xl bg-primary-600/20 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary-600 transition-colors">
                   <info.icon className="text-primary-500 group-hover:text-white transition-colors" size={24} />
                 </div>
-                <h3 className="font-heading text-lg font-bold text-white mb-3">{info.title}</h3>
+                <h3 className="font-heading text-lg font-bold text-white mb-3">
+                  {info.title}
+                </h3>
                 <div className="space-y-1">
-                  {info.details.map((detail, idx) => (
+                  {info.details.map((detail, idx) =>
                     info.links ? (
-                      <a 
+                      <a
                         key={idx}
                         href={info.links[idx]}
                         className="block text-gray-400 hover:text-primary-400 transition-colors"
@@ -101,7 +93,7 @@ const Contact = () => {
                     ) : (
                       <p key={idx} className="text-gray-400">{detail}</p>
                     )
-                  ))}
+                  )}
                 </div>
               </div>
             ))}
@@ -109,78 +101,68 @@ const Contact = () => {
         </div>
       </section>
 
-      {/* Contact Form & Map */}
-      <section className="py-20 bg-dark-400">
-  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    
-    {/* Make both cards equal width + equal height */}
-    <div className="flex gap-12 items-stretch">
+      {/* ================= MAP + QUICK CONTACT ================= */}
+      <section className="py-16 bg-dark-400">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex gap-12 items-stretch">
 
-      {/* Map Section */}
-      <div className="flex-1 h-full">
-        <div className="card-dark overflow-hidden h-full min-h-[380px] flex flex-col">
-          <div className="w-full h-full bg-dark-200 flex items-center justify-center relative flex-1">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary-600/10 to-neon-orange/10"></div>
-            <div className="text-center relative z-10">
-              <MapPin size={48} className="text-primary-500 mx-auto mb-4" />
-              <h3 className="font-heading text-xl font-bold text-white mb-2">Find Us Here</h3>
-              <p className="text-gray-400">123 Fitness Street, Mumbai</p>
-              <a
-                href="https://maps.google.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-4 inline-block text-primary-400 hover:text-primary-300 font-medium"
-              >
-                Open in Google Maps →
-              </a>
+            {/* MAP – BORDER HOVER ONLY */}
+            <div className="flex-1">
+              <div className="card-dark h-full min-h-[380px] overflow-hidden
+                              transition-colors duration-300
+                              hover:border-primary-500/50">
+                <iframe
+                  title="FITGYM Location"
+                  src="https://www.google.com/maps?q=Mumbai%20India&output=embed"
+                  className="w-full h-full border-0"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
+              </div>
             </div>
+
+            {/* QUICK CONTACT */}
+            <div className="flex-1">
+              <div className="card-dark p-6 h-full min-h-[380px]">
+                <h3 className="font-heading text-lg font-bold text-white mb-6">
+                  Quick Contact
+                </h3>
+
+                <div className="space-y-4">
+                  <a
+                    href="tel:+919876543210"
+                    className="flex items-center gap-4 p-4 rounded-xl bg-dark-300 hover:bg-dark-100 transition-colors group"
+                  >
+                    <div className="w-12 h-12 rounded-full bg-primary-600/20 flex items-center justify-center group-hover:bg-primary-600 transition-colors">
+                      <Phone className="text-primary-500 group-hover:text-white transition-colors" size={20} />
+                    </div>
+                    <div>
+                      <p className="text-white font-medium">Call FITGYM</p>
+                      <p className="text-gray-400 text-sm">+91 98765 43210</p>
+                    </div>
+                  </a>
+
+                  <a
+                    href="https://wa.me/919876543210"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-4 p-4 rounded-xl bg-dark-300 hover:bg-dark-100 transition-colors group"
+                  >
+                    <div className="w-12 h-12 rounded-full bg-green-600/20 flex items-center justify-center group-hover:bg-green-600 transition-colors">
+                      <MessageSquare className="text-green-500 group-hover:text-white transition-colors" size={20} />
+                    </div>
+                    <div>
+                      <p className="text-white font-medium">WhatsApp FITGYM</p>
+                      <p className="text-gray-400 text-sm">Chat with us instantly</p>
+                    </div>
+                  </a>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
-      </div>
-
-      {/* Contact Section */}
-      <div className="flex-1 h-full">
-        <div className="card-dark p-6 h-full min-h-[380px] flex flex-col justify-between">
-          <div>
-            <h3 className="font-heading text-lg font-bold text-white mb-4">Quick Contact</h3>
-            <div className="space-y-4">
-
-              <a
-                href="tel:+919876543210"
-                className="flex items-center gap-4 p-4 rounded-xl bg-dark-300 hover:bg-dark-100 transition-colors group"
-              >
-                <div className="w-12 h-12 rounded-full bg-primary-600/20 flex items-center justify-center group-hover:bg-primary-600 transition-colors">
-                  <Phone className="text-primary-500 group-hover:text-white transition-colors" size={20} />
-                </div>
-                <div>
-                  <p className="text-white font-medium">Call Now</p>
-                  <p className="text-gray-400 text-sm">+91 98765 43210</p>
-                </div>
-              </a>
-
-              <a
-                href="https://wa.me/919876543210"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-4 p-4 rounded-xl bg-dark-300 hover:bg-dark-100 transition-colors group"
-              >
-                <div className="w-12 h-12 rounded-full bg-green-600/20 flex items-center justify-center group-hover:bg-green-600 transition-colors">
-                  <MessageSquare className="text-green-500 group-hover:text-white transition-colors" size={20} />
-                </div>
-                <div>
-                  <p className="text-white font-medium">WhatsApp</p>
-                  <p className="text-gray-400 text-sm">Chat with us instantly</p>
-                </div>
-              </a>
-
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</section>
+      </section>
 
     </div>
   )
