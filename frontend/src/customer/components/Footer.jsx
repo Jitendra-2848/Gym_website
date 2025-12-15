@@ -1,6 +1,6 @@
 // src/customer/components/Footer.jsx
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import {
   Dumbbell,
   MapPin,
@@ -14,7 +14,11 @@ import {
 } from "lucide-react";
 
 const Footer = () => {
-  /* ========= SCROLL TO TOP ========= */
+  const location = useLocation();
+ const hiddenRoutes = ["/login", "/set-password",];
+if (hiddenRoutes.includes(location.pathname)) return null;
+
+
   const goToTop = () => {
     window.scrollTo({
       top: 0,
@@ -28,7 +32,7 @@ const Footer = () => {
       {/* Main Footer */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
-          
+
           {/* Brand Section */}
           <div className="lg:col-span-1">
             <Link to="/" onClick={goToTop} className="flex items-center gap-3 mb-6">
@@ -96,20 +100,14 @@ const Footer = () => {
             </h3>
             <ul className="space-y-4">
               <li className="flex items-start gap-3 text-gray-400">
-                <MapPin
-                  size={20}
-                  className="text-primary-500 mt-1 flex-shrink-0"
-                />
+                <MapPin size={20} className="text-primary-500 mt-1" />
                 <span>
                   123 Fitness Street, Near Central Park, Mumbai - 400001
                 </span>
               </li>
 
               <li className="flex items-center gap-3">
-                <Phone
-                  size={20}
-                  className="text-primary-500 flex-shrink-0"
-                />
+                <Phone size={20} className="text-primary-500" />
                 <a
                   href="tel:+919876543210"
                   className="text-gray-400 hover:text-primary-400 transition-colors"
@@ -119,10 +117,7 @@ const Footer = () => {
               </li>
 
               <li className="flex items-center gap-3">
-                <Mail
-                  size={20}
-                  className="text-primary-500 flex-shrink-0"
-                />
+                <Mail size={20} className="text-primary-500" />
                 <a
                   href="mailto:info@sanatangym.com"
                   className="text-gray-400 hover:text-primary-400 transition-colors"
@@ -132,10 +127,7 @@ const Footer = () => {
               </li>
 
               <li className="flex items-start gap-3 text-gray-400">
-                <Clock
-                  size={20}
-                  className="text-primary-500 mt-1 flex-shrink-0"
-                />
+                <Clock size={20} className="text-primary-500 mt-1" />
                 <div>
                   <p>Mon - Sat: 5:00 AM - 11:00 PM</p>
                   <p>Sunday: 6:00 AM - 8:00 PM</p>
@@ -149,12 +141,10 @@ const Footer = () => {
 
       {/* Bottom Bar */}
       <div className="border-t border-dark-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-gray-500 text-sm text-center md:text-left">
-              © {new Date().getFullYear()} SANATAN GYM. All rights reserved.
-            </p>
-          </div>
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          <p className="text-gray-500 text-sm text-center md:text-left">
+            © {new Date().getFullYear()} SANATAN GYM. All rights reserved.
+          </p>
         </div>
       </div>
     </footer>

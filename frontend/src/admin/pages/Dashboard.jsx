@@ -54,7 +54,6 @@ const Dashboard = () => {
     { label: 'Total Members', value: totalCount, icon: Users, color: 'primary' },
     { label: 'Active Members', value: activeCount, icon: UserCheck, color: 'green' },
     { label: 'Pending Renewals', value: pendingCount, icon: Hourglass, color: 'orange' },
-    { label: 'Cancelled', value: cancelledCount, icon: UserX, color: 'red' },
   ];
 
   // --- LISTS (Excluding Cancelled) ---
@@ -81,7 +80,7 @@ const Dashboard = () => {
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString('en-IN', {
-        day: 'numeric', month: 'short', year: 'numeric'
+      day: 'numeric', month: 'short', year: 'numeric'
     });
   };
 
@@ -93,10 +92,11 @@ const Dashboard = () => {
           <h1 className="font-heading text-3xl font-bold text-white">Dashboard</h1>
           <p className="text-gray-400 mt-1">Overview of Sanatan Gym members.</p>
         </div>
-        <Link to="/admin/add" className="btn-primary flex items-center gap-2 w-fit">
+        <Link to="/admin/add" className="relative overflow-hidden btn-primary flex items-center gap-2 w-fit before:absolute before:top-0 before:-left-[120%] before:w-[120%] before:h-full before:bg-gradient-to-r before:from-transparent before:via-white/30 before:to-transparent before:skew-x-12 before:transition-all before:duration-700 hover:before:left-[120%]">
           <UserPlus size={18} />
           Add New Member
         </Link>
+
       </div>
 
       {/* Stats Grid */}
@@ -117,7 +117,7 @@ const Dashboard = () => {
 
       {/* Content Grid */}
       <div className="grid lg:grid-cols-2 gap-6">
-        
+
         {/* Recent Members */}
         <div className="card-dark p-6">
           <div className="flex items-center justify-between mb-6">
@@ -167,7 +167,7 @@ const Dashboard = () => {
             <div className="space-y-4">
               {pendingList.map((member) => {
                 const daysLeft = getDaysDiff(member.end_date);
-                
+
                 return (
                   <Link
                     key={member._id}
@@ -183,9 +183,9 @@ const Dashboard = () => {
                       <h4 className="text-white font-medium truncate">{member.name}</h4>
                       <p className="text-gray-400 text-xs">Ends: {formatDate(member.end_date)}</p>
                     </div>
-                    
+
                     <span className="px-3 py-1 rounded-full text-xs font-bold bg-orange-500/20 text-orange-400 whitespace-nowrap">
-                        {daysLeft === 0 ? "Today" : `${daysLeft}d`}
+                      {daysLeft === 0 ? "Today" : `${daysLeft}d`}
                     </span>
                   </Link>
                 )

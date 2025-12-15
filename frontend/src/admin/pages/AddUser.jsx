@@ -44,12 +44,12 @@ const compressImage = (base64, maxWidth = 400, quality = 0.7) => {
 
 // Pricing Tiers
 const PRICING_TIERS = [
-  { months: 1, pricePerMonth: 500, discount: 0, label: "1 Month" },
-  { months: 2, pricePerMonth: 480, discount: 4, label: "2 Months" },
-  { months: 3, pricePerMonth: 450, discount: 10, label: "3 Months" },
-  { months: 6, pricePerMonth: 400, discount: 20, label: "6 Months" },
-  { months: 12, pricePerMonth: 350, discount: 30, label: "12 Months" },
+  { months: 1, amount: 500, label: "1 Month" },
+  { months: 3, amount: 1500, label: "3 Months" },
+  { months: 6, amount: 3000, label: "6 Months" },
+  { months: 12, amount: 6000, label: "12 Months" },
 ];
+
 
 const AddUser = () => {
   const navigate = useNavigate();
@@ -88,16 +88,13 @@ const AddUser = () => {
     extraDiscount: 0,
   });
 
-  // Pricing State
   const [pricing, setPricing] = useState({
-    pricePerMonth: 0,
-    tierDiscount: 0,
-    tierSaving: 0,
-    totalBeforeDiscount: 0,
+    baseAmount: 0,
     extraDiscount: 0,
     grandTotal: 0,
     selectedPlan: null
   });
+
 
   useEffect(() => {
     const checkCamera = async () => {
@@ -124,9 +121,7 @@ const AddUser = () => {
   useEffect(() => {
     if (!formData.duration) {
       setPricing({
-        pricePerMonth: 0,
-        tierDiscount: 0,
-        totalBeforeDiscount: 0,
+        baseAmount: 0,
         extraDiscount: 0,
         grandTotal: 0,
         selectedPlan: null
@@ -135,25 +130,20 @@ const AddUser = () => {
     }
 
     const months = parseInt(formData.duration);
-    const tier = PRICING_TIERS.find((t) => t.months === months) || PRICING_TIERS[0];
-    
-    const basePrice = 500;
-    const totalBase = basePrice * months;
-    const totalWithTier = tier.pricePerMonth * months;
-    const tierSaving = totalBase - totalWithTier;
+    const tier = PRICING_TIERS.find(t => t.months === months);
+
+    const baseAmount = tier.amount;
     const extraDiscount = Number(formData.extraDiscount) || 0;
-    const grandTotal = Math.max(totalWithTier - extraDiscount, 0);
+    const grandTotal = Math.max(baseAmount - extraDiscount, 0);
 
     setPricing({
-      pricePerMonth: tier.pricePerMonth,
-      tierDiscount: tier.discount,
-      tierSaving: tierSaving,
-      totalBeforeDiscount: totalWithTier,
-      extraDiscount: extraDiscount,
-      grandTotal: grandTotal,
+      baseAmount,
+      extraDiscount,
+      grandTotal,
       selectedPlan: tier
     });
   }, [formData.duration, formData.extraDiscount]);
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -202,13 +192,13 @@ const AddUser = () => {
   };
 
   // --- Helpers to fix Input issues ---
-  
+
   // 1. Prevent scroll from changing number
   const handleWheel = (e) => e.target.blur();
-  
+
   // 2. Open Calendar on click anywhere in input
   const handleDateClick = (e) => {
-    if(e.target.showPicker) e.target.showPicker();
+    if (e.target.showPicker) e.target.showPicker();
   };
 
   // --- Camera Logic ---
@@ -418,15 +408,16 @@ const AddUser = () => {
                       key={tier.months}
                       type="button"
                       onClick={() => selectDuration(tier.months)}
-                      className={`p-4 rounded-xl border-2 transition-all text-center ${
-                        formData.duration === tier.months.toString()
+                      className={`p-4 rounded-xl border-2 transition-all text-center ${formData.duration === tier.months.toString()
                           ? "border-primary-500 bg-primary-500/10"
                           : "border-dark-100 hover:border-dark-50 bg-dark-200"
-                      }`}
+                        }`}
                     >
-                      <p className="text-white font-bold text-lg">{tier.label}</p>
-                      <p className="text-primary-400 font-semibold">₹{tier.pricePerMonth}/mo</p>
-                      {tier.discount > 0 && <span className="inline-block mt-1 px-2 py-0.5 rounded-full text-xs bg-green-500/20 text-green-400">{tier.discount}% OFF</span>}
+                      <p className="text-white font-bold text-m">{tier.label}</p>
+                      <p className="text-primary-400 font-semibold text-sm">
+                        ₹{tier.amount}
+                      </p>
+
                     </button>
                   ))}
                 </div>
@@ -434,14 +425,14 @@ const AddUser = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm text-gray-400 mb-1 block">Start Date *</label>
-                  <input 
-                    type="date" 
-                    name="startDate" 
-                    value={formData.startDate} 
-                    onChange={handleChange} 
+                  <input
+                    type="date"
+                    name="startDate"
+                    value={formData.startDate}
+                    onChange={handleChange}
                     onClick={handleDateClick} // Opens picker on click
-                    min={new Date().toISOString().split("T")[0]} 
-                    className="input-dark w-full cursor-pointer" 
+                    min={new Date().toISOString().split("T")[0]}
+                    className="input-dark w-full cursor-pointer"
                   />
                 </div>
                 <div>
@@ -459,15 +450,15 @@ const AddUser = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm text-gray-400 mb-1 block">Extra Discount (₹)</label>
-                  <input 
-                    type="number" 
-                    name="extraDiscount" 
-                    value={formData.extraDiscount} 
-                    onChange={handleChange} 
+                  <input
+                    type="number"
+                    name="extraDiscount"
+                    value={formData.extraDiscount}
+                    onChange={handleChange}
                     onWheel={handleWheel} // Prevents scroll change
-                    placeholder="0" 
-                    min="0" 
-                    className="input-dark w-full" 
+                    placeholder="0"
+                    min="0"
+                    className="input-dark w-full"
                   />
                 </div>
                 <div>
@@ -489,11 +480,9 @@ const AddUser = () => {
                   <div className="p-4 rounded-xl bg-primary-500/10 border border-primary-500/30">
                     <p className="text-gray-400 text-sm">Selected Plan</p>
                     <p className="text-white font-bold text-xl">{formData.duration} Month{formData.duration > 1 ? "s" : ""}</p>
-                    <p className="text-primary-400">₹{pricing.pricePerMonth}/month</p>
                   </div>
                   <div className="space-y-3 text-sm">
                     <div className="flex justify-between text-gray-400"><span>Base Price</span><span>₹{500 * parseInt(formData.duration)}</span></div>
-                    {pricing.tierSaving > 0 && <div className="flex justify-between text-green-400"><span>Plan Savings</span><span>-₹{pricing.tierSaving}</span></div>}
                     {pricing.extraDiscount > 0 && <div className="flex justify-between text-red-400"><span>Extra Discount</span><span>-₹{pricing.extraDiscount}</span></div>}
                     <div className="border-t border-dark-100 pt-3 flex justify-between text-white font-bold text-lg"><span>Total Pay</span><span className="text-primary-400">₹{pricing.grandTotal}</span></div>
                   </div>
@@ -513,7 +502,7 @@ const AddUser = () => {
         </div>
       </form>
 
-      <ConfirmationModal 
+      <ConfirmationModal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
         onConfirm={handleFinalConfirm}
