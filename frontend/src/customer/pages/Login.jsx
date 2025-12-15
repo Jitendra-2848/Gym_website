@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate, Link, useLocation } from 'react-router-dom'
 import { Store } from '../../utils/store'
+import { Dumbbell, AlertCircle, User, Lock, EyeOff, Eye, ArrowRight } from 'lucide-react'
 
 const Login = () => {
     const [formData, setFormData] = useState({ mobile: '', password: '' })

@@ -29,13 +29,19 @@ const addMember = async (req, res) => {
         const endDate = new Date(parsedStartDate);
         endDate.setMonth(endDate.getMonth() + parseInt(duration));
 
-        // Create member - use req.fileUrl from middleware
+        // Create member
+        let profilePicUrl = '';
+        if (req.body.profile_pic && req.body.profile_pic.startsWith('data:image')) {
+            // For now, save base64 directly
+            profilePicUrl = req.body.profile_pic;
+        }
+
         const newMember = new Member({
             name: sanitize(name),
             mobile: mobileStr,
             email: sanitize(email || ''),
             password: hashedPassword,
-            profile_pic: req.fileUrl || '',  // ⬅️ From middleware
+            profile_pic: profilePicUrl,
             start_date: parsedStartDate,
             end_date: endDate,
             duration_months: parseInt(duration),
@@ -147,11 +153,8 @@ const updateuser = async (req, res) => {
         // Handle photo update
         let photoUrl = member.profile_pic;
 
-        if (req.fileUrl) {
-            if (member.profile_pic) {
-                await deleteFromCloudinary(member.profile_pic);
-            }
-            photoUrl = req.fileUrl;
+        if (req.body.profile_pic && req.body.profile_pic.startsWith('data:image')) {
+            photoUrl = req.body.profile_pic;
         }
 
         // Build update object

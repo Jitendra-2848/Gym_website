@@ -61,9 +61,9 @@ const updateProfile = async (req, res) => {
         if (name) updateFields.name = name;
         if (email) updateFields.email = email;
 
-        // ✅ Middleware put the URL here
-        if (req.fileUrl) {
-            updateFields.profile_pic = req.fileUrl;
+        // Handle photo update
+        if (req.body.profile_pic && req.body.profile_pic.startsWith('data:image')) {
+            updateFields.profile_pic = req.body.profile_pic;
         }
 
         const member = await Member.findByIdAndUpdate(

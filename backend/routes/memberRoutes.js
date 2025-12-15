@@ -5,5 +5,5 @@ const verifyToken = require('../middleware/verifyToken');
 const { upload } = require('../config/cloudinary');
 
 router.get('/profile', verifyToken, getProfile);
-router.put('/update', verifyToken,upload.single('profile_pic'), updateProfile);
+router.put('/update', verifyToken, updateProfile);
 module.exports = router; 

@@ -18,6 +18,30 @@ import {
 import { Store } from "../../utils/store";
 import ConfirmationModal from "../components/ConfirmationModal";
 
+// Compress Image Function
+const compressImage = (base64, maxWidth = 400, quality = 0.7) => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.src = base64;
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      let width = img.width;
+      let height = img.height;
+      if (width > maxWidth) {
+        height = (height * maxWidth) / width;
+        width = maxWidth;
+      }
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, width, height);
+      const compressed = canvas.toDataURL("image/jpeg", quality);
+      resolve(compressed);
+    };
+    img.onerror = () => resolve(base64);
+  });
+};
+
 // Pricing Tiers
 const PRICING_TIERS = [
   { months: 1, pricePerMonth: 500, discount: 0, label: "1 Month" },
@@ -159,9 +183,15 @@ const AddUser = () => {
   const handlePhotoUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setPhotoFile(file);
-      setPhotoPreview(URL.createObjectURL(file));
-      setShowPhotoOptions(false);
+      // Convert to base64
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const base64 = event.target.result;
+        setPhotoFile(base64);
+        setPhotoPreview(URL.createObjectURL(file));
+        setShowPhotoOptions(false);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -217,10 +247,15 @@ const AddUser = () => {
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     canvas.toBlob((blob) => {
       if (!blob) return;
-      const file = new File([blob], "photo.jpg", { type: "image/jpeg" });
-      setPhotoFile(file);
-      setPhotoPreview(URL.createObjectURL(blob));
-      stopCamera();
+      // Convert blob to base64
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const base64 = event.target.result;
+        setPhotoFile(base64);
+        setPhotoPreview(URL.createObjectURL(blob));
+        stopCamera();
+      };
+      reader.readAsDataURL(blob);
     }, "image/jpeg", 0.9);
   };
 
@@ -256,16 +291,17 @@ const AddUser = () => {
   const handleFinalConfirm = async () => {
     setLoading(true);
     try {
-      const data = new FormData();
-      data.append("name", formData.name);
-      data.append("mobile", formData.mobile);
-      data.append("email", formData.email || "");
-      data.append("startDate", formData.startDate);
-      data.append("duration", formData.duration);
-      data.append("discount", formData.extraDiscount || 0);
-      data.append("totalAmount", pricing.grandTotal);
-      data.append("focus_note", formData.focus_note || "");
-      if (photoFile) data.append("profile_pic", photoFile);
+      const data = {
+        name: formData.name,
+        mobile: formData.mobile,
+        email: formData.email || "",
+        startDate: formData.startDate,
+        duration: formData.duration,
+        discount: formData.extraDiscount || 0,
+        totalAmount: pricing.grandTotal,
+        focus_note: formData.focus_note || "",
+        profile_pic: photoFile || null
+      };
 
       const result = await addUser(data);
 

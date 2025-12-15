@@ -31,7 +31,7 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, memberData, pricingData
         const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
         
         pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-        pdf.save(`FITGYM_Invoice_${memberData.name.replace(/\s+/g, '_')}.pdf`);
+        pdf.save(`SANATAN_GYM_Invoice_${memberData.name.replace(/\s+/g, '_')}.pdf`);
     } catch (error) {
         console.error("Error generating PDF:", error);
         alert("Failed to generate PDF. Please try again.");

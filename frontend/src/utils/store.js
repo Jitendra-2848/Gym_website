@@ -312,8 +312,18 @@ export const Store = create((set, get) => ({
     try {
       const res = await api.put('/api/auth/set-password', { newPassword: pass })
       console.log(res.data);
+      if (res.data.success) {
+        // Update user state to mark as not first login
+        set((state) => ({
+          user: state.user ? { ...state.user, isFirstLogin: false } : null
+        }));
+        return { success: true };
+      } else {
+        return { success: false, message: res.data.message };
+      }
     } catch (err) {
       console.log(err)
+      return { success: false, message: err.response?.data?.message || 'Failed to set password' };
     }
   }
 }));

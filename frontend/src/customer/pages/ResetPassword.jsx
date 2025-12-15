@@ -7,6 +7,7 @@ import { api } from '../../utils/axios'
 const ResetPassword = () => {
     const [form, setForm] = useState({ newPassword: '', confirmPassword: '' })
     const [showPassword, setShowPassword] = useState(false)
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState(null)
 
@@ -26,8 +27,16 @@ const ResetPassword = () => {
 
         const mobile = user?.mobile
         if (!mobile) return setError('Mobile number not found. Please login again.')
-        reset_pass(form.newPassword);
-        
+
+        setLoading(true)
+        const result = await reset_pass(form.newPassword);
+        setLoading(false)
+
+        if (result.success) {
+            navigate('/profile')
+        } else {
+            setError(result.message || 'Failed to set password')
+        }
     }
 
     return (
@@ -36,8 +45,8 @@ const ResetPassword = () => {
             <div className="relative w-full max-w-md">
                 <div className="card-dark p-8 md:p-10">
                     <div className="text-center mb-8">
-                        <h2 className="font-heading text-2xl font-bold text-white mb-2">Set New Password</h2>
-                        <p className="text-gray-400">Enter a new password</p>
+                        <h2 className="font-heading text-2xl font-bold text-white mb-2">Set Your New Password</h2>
+                        <p className="text-gray-400">Looks like this is your first login. Please change your default password to secure your account.</p>
                     </div>
 
                     {error && (
@@ -76,7 +85,7 @@ const ResetPassword = () => {
                             <div className="relative">
                                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
                                 <input
-                                    type={showPassword ? 'text' : 'password'}
+                                    type={showConfirmPassword ? 'text' : 'password'}
                                     name="confirmPassword"
                                     value={form.confirmPassword}
                                     onChange={handleChange}
@@ -84,6 +93,13 @@ const ResetPassword = () => {
                                     className="input-dark pl-12 pr-12"
                                     placeholder="Re-enter new password"
                                 />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition-colors"
+                                >
+                                    {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
                             </div>
                         </div>
 
@@ -107,7 +123,7 @@ const ResetPassword = () => {
                     </form>
 
                     <div className="mt-8 text-center">
-                        <p className="text-gray-400">After setting your password you'll be redirected to the home page.</p>
+                        <p className="text-gray-400">After setting your password, you'll be redirected to your profile page.</p>
                     </div>
                 </div>
             </div>

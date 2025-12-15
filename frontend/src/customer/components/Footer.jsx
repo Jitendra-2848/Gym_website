@@ -37,7 +37,7 @@ const Footer = () => {
               </div>
               <div>
                 <h1 className="font-heading text-xl font-bold text-white">
-                  FITGYM
+                  SANATAN GYM
                 </h1>
                 <p className="text-xs text-primary-400 font-semibold tracking-widest">
                   GYM & FITNESS
@@ -124,10 +124,10 @@ const Footer = () => {
                   className="text-primary-500 flex-shrink-0"
                 />
                 <a
-                  href="mailto:info@fitgym.com"
+                  href="mailto:info@sanatangym.com"
                   className="text-gray-400 hover:text-primary-400 transition-colors"
                 >
-                  info@fitgym.com
+                  info@sanatangym.com
                 </a>
               </li>
 
@@ -152,7 +152,7 @@ const Footer = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-gray-500 text-sm text-center md:text-left">
-              © {new Date().getFullYear()} FITGYM. All rights reserved.
+              © {new Date().getFullYear()} SANATAN GYM. All rights reserved.
             </p>
           </div>
         </div>
