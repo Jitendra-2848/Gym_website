@@ -1,36 +1,7 @@
-// src/customer/pages/Contact.jsx
-import React, { useState } from 'react'
-import { MapPin, Phone, Mail, Clock, Send, CheckCircle, MessageSquare } from 'lucide-react'
+import React from 'react'
+import { MapPin, Phone, Mail, Clock, MessageSquare, ExternalLink } from 'lucide-react'
 
 const Contact = () => {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    subject: '',
-    message: ''
-  })
-  const [submitted, setSubmitted] = useState(false)
-  const [loading, setLoading] = useState(false)
-
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
-  }
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    setLoading(true)
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    
-    setLoading(false)
-    setSubmitted(true)
-    setFormData({ name: '', email: '', phone: '', subject: '', message: '' })
-    
-    setTimeout(() => setSubmitted(false), 5000)
-  }
-
   const contactInfo = [
     {
       icon: MapPin,
@@ -59,7 +30,7 @@ const Contact = () => {
   return (
     <div className="pt-20">
       {/* Hero Section */}
-      <section className="py-20 md:py-32 relative overflow-hidden">
+      <section className="py-20 md:py-28 relative overflow-hidden">
         <div className="absolute inset-0 bg-orange-glow opacity-30"></div>
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -73,7 +44,7 @@ const Contact = () => {
           </h1>
 
           <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-            Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible.
+            Have questions? We'd love to hear from you. Reach out to us via phone, email, or visit us directly at our center.
           </p>
         </div>
       </section>
@@ -83,7 +54,7 @@ const Contact = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {contactInfo.map((info, index) => (
-              <div key={index} className="card-dark p-6 text-center group hover:border-primary-500/50">
+              <div key={index} className="card-dark p-6 text-center group hover:border-primary-500/50 transition-all duration-300">
                 <div className="w-14 h-14 rounded-2xl bg-primary-600/20 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary-600 transition-colors">
                   <info.icon className="text-primary-500 group-hover:text-white transition-colors" size={24} />
                 </div>
@@ -111,77 +82,85 @@ const Contact = () => {
 
       {/* Contact Form & Map */}
       <section className="py-20 bg-dark-400">
-  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    
-    {/* Make both cards equal width + equal height */}
-    <div className="flex gap-12 items-stretch">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          {/* Responsive Layout: Column on mobile, Row on Large Screens */}
+          <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-stretch">
 
-      {/* Map Section */}
-      <div className="flex-1 h-full">
-        <div className="card-dark overflow-hidden h-full min-h-[380px] flex flex-col">
-          <div className="w-full h-full bg-dark-200 flex items-center justify-center relative flex-1">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary-600/10 to-neon-orange/10"></div>
-            <div className="text-center relative z-10">
-              <MapPin size={48} className="text-primary-500 mx-auto mb-4" />
-              <h3 className="font-heading text-xl font-bold text-white mb-2">Find Us Here</h3>
-              <p className="text-gray-400">123 Fitness Street, Mumbai</p>
-              <a
-                href="https://maps.google.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-4 inline-block text-primary-400 hover:text-primary-300 font-medium"
-              >
-                Open in Google Maps →
-              </a>
+            {/* Map Section */}
+            <div className="w-full lg:flex-1">
+              <div className="card-dark overflow-hidden h-full min-h-[300px] lg:min-h-[400px] flex flex-col relative group">
+                {/* Embedded Google Map */}
+                <iframe 
+                  title="Gym Location"
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3770.792576085532!2d72.8776563149012!3d19.07609098708792!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be7c6306644edc1%3A0x5da4ed8f8d648c69!2sMumbai%2C%20Maharashtra!5e0!3m2!1sen!2sin!4v1625641234567!5m2!1sen!2sin" 
+                  width="100%" 
+                  height="100%" 
+                  style={{ border: 0, minHeight: '300px' }} 
+                  allowFullScreen="" 
+                  loading="lazy"
+                  className="grayscale hover:grayscale-0 transition-all duration-500 opacity-80 hover:opacity-100"
+                ></iframe>
+                
+                {/* Overlay Text */}
+                <div className="absolute bottom-4 left-4 bg-dark-200/90 backdrop-blur-md p-3 rounded-lg border border-gray-700">
+                  <p className="text-white text-sm font-bold flex items-center gap-2">
+                    <MapPin size={14} className="text-primary-500"/> Mumbai, India
+                  </p>
+                </div>
+              </div>
             </div>
+
+            {/* Quick Contact Section */}
+            <div className="w-full lg:flex-1">
+              <div className="card-dark p-8 h-full flex flex-col justify-center">
+                <div>
+                  <h3 className="font-heading text-2xl font-bold text-white mb-2">Quick Connect</h3>
+                  <p className="text-gray-400 mb-8">
+                    Prefer to talk directly? Connect with us instantly via phone or WhatsApp.
+                  </p>
+
+                  <div className="space-y-4">
+                    {/* Phone Button */}
+                    <a
+                      href="tel:+919876543210"
+                      className="flex items-center gap-5 p-5 rounded-2xl bg-dark-300 border border-transparent hover:border-primary-500/30 hover:bg-dark-200 transition-all group"
+                    >
+                      <div className="w-12 h-12 rounded-full bg-primary-600/20 flex items-center justify-center group-hover:bg-primary-600 transition-all duration-300">
+                        <Phone className="text-primary-500 group-hover:text-white transition-colors" size={22} />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-white font-bold text-lg">Call Now</p>
+                        <p className="text-gray-400 text-sm">+91 98765 43210</p>
+                      </div>
+                      <ExternalLink className="text-gray-600 group-hover:text-primary-500 transition-colors" size={18} />
+                    </a>
+
+                    {/* WhatsApp Button */}
+                    <a
+                      href="https://wa.me/919876543210"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-5 p-5 rounded-2xl bg-dark-300 border border-transparent hover:border-green-500/30 hover:bg-dark-200 transition-all group"
+                    >
+                      <div className="w-12 h-12 rounded-full bg-green-600/20 flex items-center justify-center group-hover:bg-green-600 transition-all duration-300">
+                        <MessageSquare className="text-green-500 group-hover:text-white transition-colors" size={22} />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-white font-bold text-lg">WhatsApp</p>
+                        <p className="text-gray-400 text-sm">Chat with us instantly</p>
+                      </div>
+                      <ExternalLink className="text-gray-600 group-hover:text-green-500 transition-colors" size={18} />
+                    </a>
+
+                  </div>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
-      </div>
-
-      {/* Contact Section */}
-      <div className="flex-1 h-full">
-        <div className="card-dark p-6 h-full min-h-[380px] flex flex-col justify-between">
-          <div>
-            <h3 className="font-heading text-lg font-bold text-white mb-4">Quick Contact</h3>
-            <div className="space-y-4">
-
-              <a
-                href="tel:+919876543210"
-                className="flex items-center gap-4 p-4 rounded-xl bg-dark-300 hover:bg-dark-100 transition-colors group"
-              >
-                <div className="w-12 h-12 rounded-full bg-primary-600/20 flex items-center justify-center group-hover:bg-primary-600 transition-colors">
-                  <Phone className="text-primary-500 group-hover:text-white transition-colors" size={20} />
-                </div>
-                <div>
-                  <p className="text-white font-medium">Call Now</p>
-                  <p className="text-gray-400 text-sm">+91 98765 43210</p>
-                </div>
-              </a>
-
-              <a
-                href="https://wa.me/919876543210"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-4 p-4 rounded-xl bg-dark-300 hover:bg-dark-100 transition-colors group"
-              >
-                <div className="w-12 h-12 rounded-full bg-green-600/20 flex items-center justify-center group-hover:bg-green-600 transition-colors">
-                  <MessageSquare className="text-green-500 group-hover:text-white transition-colors" size={20} />
-                </div>
-                <div>
-                  <p className="text-white font-medium">WhatsApp</p>
-                  <p className="text-gray-400 text-sm">Chat with us instantly</p>
-                </div>
-              </a>
-
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</section>
-
+      </section>
     </div>
   )
 }

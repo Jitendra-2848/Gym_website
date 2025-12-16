@@ -12,6 +12,7 @@ const ResetPassword = () => {
 
     const navigate = useNavigate()
     const user = Store((state) => state.user)
+    const reset_pass = Store((state) => state.reset_pass)
 
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value })
@@ -25,20 +26,8 @@ const ResetPassword = () => {
 
         const mobile = user?.mobile
         if (!mobile) return setError('Mobile number not found. Please login again.')
-
-        try {
-            setLoading(true)
-            const res = await api.post('/api/auth/set-password', { mobile, newPassword: form.newPassword })
-            if (res.data && res.data.success) {
-                navigate('/')
-            } else {
-                setError(res.data?.message || 'Failed to set password')
-            }
-        } catch (err) {
-            setError(err.response?.data?.message || 'Server error')
-        } finally {
-            setLoading(false)
-        }
+        reset_pass(form.newPassword);
+        
     }
 
     return (

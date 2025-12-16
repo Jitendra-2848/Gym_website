@@ -15,9 +15,10 @@ import { Store } from '../../utils/store'
 const DEFAULT_AVATAR = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 
 const Dashboard = () => {
-  const { getAllUser, userList } = Store();
+  const { getAllUser, userList,priceFun } = Store();
 
   useEffect(() => {
+    priceFun();
     getAllUser();
   }, []);
 
@@ -38,35 +39,34 @@ const Dashboard = () => {
   };
 
   // --- FILTER OUT CANCELLED USERS FOR MAIN LOGIC ---
-  const activeUsers = safeUsers.filter(m => !m.iscancel);
+  const ActiveUsers = safeUsers.filter(m => !m.iscancel);
   const cancelledUsers = safeUsers.filter(m => m.iscancel);
 
   // --- STATS CALCULATION (Excluding Cancelled) ---
   const totalCount = safeUsers.length;
   const cancelledCount = cancelledUsers.length;
-  const activeCount = activeUsers.filter(m => getDaysDiff(m.end_date) >= 0).length;
-  const pendingCount = activeUsers.filter(m => {
+  const ActiveCount = ActiveUsers.filter(m => getDaysDiff(m.end_date) >= 0).length;
+  const PendingCount = ActiveUsers.filter(m => {
     const days = getDaysDiff(m.end_date);
     return days >= 0 && days <= 3;
   }).length;
 
   const stats = [
     { label: 'Total Members', value: totalCount, icon: Users, color: 'primary' },
-    { label: 'Active Members', value: activeCount, icon: UserCheck, color: 'green' },
-    { label: 'Pending Renewals', value: pendingCount, icon: Hourglass, color: 'orange' },
-    { label: 'Cancelled', value: cancelledCount, icon: UserX, color: 'red' },
+    { label: 'Active Members', value: ActiveCount, icon: UserCheck, color: 'green' },
+    { label: 'Pending Renewals', value: PendingCount, icon: Hourglass, color: 'orange' },
   ];
 
   // --- LISTS (Excluding Cancelled) ---
-  const recentMembers = activeUsers
+  const recentMembers = ActiveUsers
     .filter(m => getDaysDiff(m.end_date) >= 0)
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
     .slice(0, 5);
 
-  const pendingList = activeUsers
+  const PendingList = ActiveUsers
     .filter(m => {
       const days = getDaysDiff(m.end_date);
-      return days >= 0 && days <= 3;
+      return days <= 3;
     })
     .sort((a, b) => getDaysDiff(a.end_date) - getDaysDiff(b.end_date))
     .slice(0, 5);
@@ -100,7 +100,7 @@ const Dashboard = () => {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         {stats.map((stat, index) => (
           <div key={index} className="card-dark p-4 md:p-6 relative overflow-hidden group">
             <div className={`absolute top-0 right-0 w-24 h-24 bg-gradient-to-br ${colorClasses[stat.color]} opacity-10 rounded-full blur-2xl group-hover:opacity-20 transition-opacity`}></div>
@@ -148,7 +148,7 @@ const Dashboard = () => {
                 </span>
               </Link>
             )) : (
-              <p className="text-gray-500 text-center py-4">No recent active members.</p>
+              <p className="text-gray-500 text-center py-4">No recent Active members.</p>
             )}
           </div>
         </div>
@@ -163,9 +163,9 @@ const Dashboard = () => {
             <span className="text-xs text-gray-500">(≤ 3 days)</span>
           </div>
 
-          {pendingList.length > 0 ? (
+          {PendingList.length > 0 ? (
             <div className="space-y-4">
-              {pendingList.map((member) => {
+              {PendingList.map((member) => {
                 const daysLeft = getDaysDiff(member.end_date);
                 
                 return (
@@ -185,7 +185,7 @@ const Dashboard = () => {
                     </div>
                     
                     <span className="px-3 py-1 rounded-full text-xs font-bold bg-orange-500/20 text-orange-400 whitespace-nowrap">
-                        {daysLeft === 0 ? "Today" : `${daysLeft}d`}
+                        {daysLeft === 0 ? "Today" : daysLeft < 0 ? "Expired" : `${daysLeft}d`}
                     </span>
                   </Link>
                 )
@@ -194,7 +194,7 @@ const Dashboard = () => {
           ) : (
             <div className="text-center py-8 text-gray-400">
               <Calendar size={48} className="mx-auto mb-4 opacity-50" />
-              <p>No pending renewals.</p>
+              <p>No Pending renewals.</p>
             </div>
           )}
         </div>

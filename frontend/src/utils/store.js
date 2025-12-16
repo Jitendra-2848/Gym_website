@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { api } from "./axios";
 
 export const Store = create((set, get) => ({
+  // ================= STATE =================
   checking: true,
   user: null,
   isAuthenticated: false,
@@ -9,28 +10,33 @@ export const Store = create((set, get) => ({
   errorMessage: null,
   memberProfile: null,
   profileLoading: false,
-  userList:[],
+  userList: [],
   userListLoading: false,
+  passwordUpdating: false,
+  pricing:[],
+  // ================= AUTH ACTIONS =================
+
   checkAuth: async () => {
     set({ checking: true });
     try {
       const res = await api.get("/api/auth/check");
       const userData = res.data.user || null;
-      console.log(userData);
+
       if (userData) {
         set({
           user: {
             ...userData,
-            role: userData.role || "member"
+            role: userData.role || "member",
+            isFirstLogin: userData.isFirstLogin ?? false,
           },
           isAuthenticated: true,
-          checking: false
+          checking: false,
         });
       } else {
         set({
           user: null,
           isAuthenticated: false,
-          checking: false
+          checking: false,
         });
       }
     } catch (error) {
@@ -38,12 +44,11 @@ export const Store = create((set, get) => ({
       set({
         user: null,
         isAuthenticated: false,
-        checking: false
+        checking: false,
       });
-    } finally{
-      set({checking:false});
     }
   },
+
   login: async (credentials) => {
     set({ isLogging: true, errorMessage: null });
 
@@ -53,17 +58,18 @@ export const Store = create((set, get) => ({
 
       if (data.success) {
         const user = {
+          id: data.id || data._id,
           role: data.role || "member",
-          isFirstLogin: data.isFirstLogin || false,
+          isFirstLogin: data.isFirstLogin ?? false,
           mobile: data.mobile || credentials.mobile,
-          name: data.name || ""
+          name: data.name || "",
         };
 
         set({
           user,
           isAuthenticated: true,
           isLogging: false,
-          errorMessage: null
+          errorMessage: null,
         });
 
         return { success: true, user };
@@ -72,7 +78,7 @@ export const Store = create((set, get) => ({
           user: null,
           isAuthenticated: false,
           isLogging: false,
-          errorMessage: data.message || "Invalid credentials"
+          errorMessage: data.message || "Invalid credentials",
         });
 
         return { success: false, message: data.message };
@@ -83,11 +89,12 @@ export const Store = create((set, get) => ({
         user: null,
         isAuthenticated: false,
         isLogging: false,
-        errorMessage: errorMsg
+        errorMessage: errorMsg,
       });
       return { success: false, message: errorMsg };
     }
   },
+
   logout: async () => {
     try {
       await api.post("/api/auth/logout");
@@ -98,10 +105,61 @@ export const Store = create((set, get) => ({
       user: null,
       isAuthenticated: false,
       errorMessage: null,
-      memberProfile: null
+      memberProfile: null,
     });
   },
+
   clearError: () => set({ errorMessage: null }),
+
+  // ================= PASSWORD RESET (FIRST LOGIN) =================
+
+  updateCustomerCredential: async ({ currentPassword, newPassword }) => {
+    set({ passwordUpdating: true, errorMessage: null });
+
+    try {
+      const response = await api.put("/api/auth/reset-password", {
+        currentPassword,
+        newPassword,
+      });
+
+      const data = response.data;
+
+      if (data.success) {
+        // Update user state - set isFirstLogin to false
+        const currentUser = get().user;
+        set({
+          user: {
+            ...currentUser,
+            isFirstLogin: false,
+          },
+          passwordUpdating: false,
+          errorMessage: null,
+        });
+
+        return { success: true, message: "Password updated successfully" };
+      } else {
+        set({
+          passwordUpdating: false,
+          errorMessage: data.message || "Failed to update password",
+        });
+
+        return { success: false, message: data.message || "Failed to update password" };
+      }
+    } catch (error) {
+      const errorMsg = error.response?.data?.message || "Server error";
+      console.error("Update credential error:", error);
+
+      set({
+        passwordUpdating: false,
+        errorMessage: errorMsg,
+      });
+
+      return { success: false, message: errorMsg };
+    }
+  },
+
+  // ================= MEMBER PROFILE =================
+
   getMemberProfile: async () => {
     set({ profileLoading: true });
     try {
@@ -119,31 +177,9 @@ export const Store = create((set, get) => ({
       return null;
     }
   },
-  // getAllUser: async () => {
-  //   try {
-  //     const res = await api.get("/api/admin/all");
-  //     console.log(res.data)
-  //     set({userList:res.data.data});
-  //   } catch (error) {
-  //     console.log(error)
-  //   }
-  // },
-  // Add this function to your existing Store
-cancelUserMembership: async (id) => {
-  try {
-    const response = await api.put(`/api/admin/cancel`,{id});
-    const data = response.data;
-    if (response.ok && data.success) {
-      const { getAllUser } = Store.getState();
-      await getAllUser();
-      return { success: true };
-    }
-    return { success: false, message: data.message || 'Failed to cancel' };
-  } catch (error) {
-    console.error('Cancel membership error:', error);
-    return { success: false, message: 'Network error' };
-  }
-},
+
+  // ================= ADMIN ACTIONS =================
+
   getAllUser: async () => {
     set({ userListLoading: true });
     try {
@@ -160,9 +196,10 @@ cancelUserMembership: async (id) => {
       return [];
     }
   },
+
   addUser: async (formData) => {
     try {
-      console.log(formData);
+      console.log("Adding user:", formData);
       const response = await api.post("/api/admin/add", formData);
 
       if (response.data?.success) {
@@ -180,10 +217,12 @@ cancelUserMembership: async (id) => {
       };
     }
   },
+
   updateUser: async (id, formData) => {
     try {
-      console.log(formData)
+      console.log("Updating user:", id, formData);
       const response = await api.put(`/api/admin/update/${id}`, formData);
+
       if (response.data?.success) {
         get().getAllUser();
         return { success: true, data: response.data.data };
@@ -198,10 +237,12 @@ cancelUserMembership: async (id) => {
       };
     }
   },
+
   deleteUser: async (id) => {
     try {
-      console.log(id);
+      console.log("Deleting user:", id);
       const response = await api.delete(`/api/admin/delete/${id}`);
+
       if (response.data?.success) {
         get().getAllUser();
         return { success: true };
@@ -215,4 +256,70 @@ cancelUserMembership: async (id) => {
       };
     }
   },
+  priceFun:async()=>{
+    try {
+      const res = await api.get("/api/admin/pricing");
+      set({pricing:res.data.rate})
+    } catch (error) {
+      console.log("error in pricing");  
+    }
+  },
+  cancelUserMembership: async (id) => {
+    try {
+      const response = await api.put(`/api/admin/cancel`, { id });
+      const data = response.data;
+
+      if (data.success) {
+        // Refresh user list
+        await get().getAllUser();
+        return { success: true };
+      }
+      return { success: false, message: data.message || "Failed to cancel" };
+    } catch (error) {
+      console.error("Cancel membership error:", error);
+      return { success: false, message: "Network error" };
+    }
+  },
+  updateMemberProfile: async (formData) => {
+    try {
+      const response = await api.put("/api/member/update", formData);
+
+      if (response.data?.success) {
+        const updatedData = response.data.data;
+
+        // Update local state immediately
+        set((state) => ({
+          // Update the specific member profile data
+          memberProfile: {
+            ...state.memberProfile,
+            ...updatedData
+          },
+          // Also update the main user object (so Navbar updates the name instantly)
+          user: {
+            ...state.user,
+            name: updatedData.name,
+            // If you store profilePic in user object too, update it here
+          }
+        }));
+
+        return { success: true, message: "Profile updated" };
+      }
+
+      return { success: false, message: response.data?.message || "Update failed" };
+    } catch (error) {
+      console.error("Update profile error:", error);
+      return {
+        success: false,
+        message: error.response?.data?.message || "Server error"
+      };
+    }
+  },
+  reset_pass: async (pass) => {
+    try {
+      const res = await api.put('/api/auth/set-password', { newPassword: pass })
+      console.log(res.data);
+    } catch (err) {
+      console.log(err)
+    }
+  }
 }));

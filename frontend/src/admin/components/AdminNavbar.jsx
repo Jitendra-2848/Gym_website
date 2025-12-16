@@ -2,10 +2,10 @@
 import React from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Menu, Bell, LogOut, Dumbbell, User } from 'lucide-react'
-import { useAuth } from '../../context/AuthContext'
-
+import { Store } from '../../utils/store'
 const AdminNavbar = ({ onMenuClick }) => {
-  const { user, logout } = useAuth()
+  // const { user, logout } = useAuth()
+  const {logout} = Store()
   const navigate = useNavigate()
 
   const handleLogout = () => {
@@ -25,7 +25,7 @@ const AdminNavbar = ({ onMenuClick }) => {
             <Menu size={24} />
           </button>
           
-          <Link to="/admin" className="flex items-center gap-3">
+          <Link to="/" className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-neon-orange rounded-xl flex items-center justify-center">
               <Dumbbell className="w-6 h-6 text-white" />
             </div>
@@ -44,7 +44,7 @@ const AdminNavbar = ({ onMenuClick }) => {
               <User size={16} className="text-white" />
             </div>
             <div className="text-sm">
-              <p className="text-white font-medium">{user?.username || 'Admin'}</p>
+              <p className="text-white font-medium">{'Admin'}</p>
               <p className="text-gray-500 text-xs">Administrator</p>
             </div>
           </div>

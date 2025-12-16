@@ -4,7 +4,6 @@
 @tailwind components;
 @tailwind utilities;
 
-
 @layer base {
   html {
     scroll-behavior: smooth;
@@ -30,7 +29,6 @@
     @apply bg-primary-500;
   }
 }
-
 @layer components {
   .btn-primary {
     @apply bg-gradient-to-r from-primary-600 to-neon-orange px-8 py-4 rounded-lg font-heading font-semibold text-lg uppercase tracking-wider transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-primary-600/50 active:scale-95;
@@ -60,7 +58,6 @@
     @apply bg-white/5 backdrop-blur-lg border border-white/10;
   }
 }
-
 @layer utilities {
   .text-shadow {
     text-shadow: 0 0 40px rgba(249,115,22,0.5);
@@ -73,7 +70,6 @@
     overflow: hidden;
   }
 }
-/* Add this to src/index.css for the modal animation */
 @keyframes scale-in {
   from {
     opacity: 0;
