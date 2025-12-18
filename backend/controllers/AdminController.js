@@ -90,14 +90,6 @@ const addMember = async (req, res) => {
                 return res.status(400).json({ success: false, message: 'Invalid date format' });
             }
             parsedStartDate.setHours(0, 0, 0, 0);
-            // ❌ NO PAST DATES ALLOWED
-            // if (parsedStartDate < today) {
-            //     return res.status(400).json({ 
-            //         success: false, 
-            //         message: 'Start date cannot be in the past. Please select today or a future date.' 
-            //     });
-            // }
-            // Max 30 days in future (reasonable limit)
             const futureLimit = new Date(today);
             futureLimit.setDate(futureLimit.getDate() + 30);
             if (parsedStartDate > futureLimit) {
@@ -323,25 +315,19 @@ const updateuser = async (req, res) => {
             const renewalMonths = parseInt(duration_months);
 
             if (isFreshStart) {
-                // ✅ FRESH START SCENARIO
-                // Expired / Pending / Cancelled / Active with ≤3 days
-                // Start from today, duration = renewal months ONLY
                 sDate = new Date(today);
                 eDate = new Date(today);
                 eDate.setMonth(eDate.getMonth() + renewalMonths);
                 newDuration = renewalMonths; // Reset to renewal months only
 
-                console.log(`📌 Fresh Start: ${renewalMonths} month(s) from today`);
+                console.log(` Fresh Start: ${renewalMonths} month(s) from today`);
             } else {
-                // ✅ EXTENSION SCENARIO  
-                // Active with >3 days left
-                // Extend from current end_date, STACK durations
                 sDate = new Date(member.start_date);
                 eDate = new Date(member.end_date);
                 eDate.setMonth(eDate.getMonth() + renewalMonths);
                 newDuration = member.duration_months + renewalMonths; // Stack durations
 
-                console.log(`📌 Extension: ${member.duration_months} + ${renewalMonths} = ${newDuration} month(s)`);
+                console.log(` Extension: ${member.duration_months} + ${renewalMonths} = ${newDuration} month(s)`);
             }
         }
         // Manual date override

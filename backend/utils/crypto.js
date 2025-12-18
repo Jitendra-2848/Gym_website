@@ -6,9 +6,6 @@ const decryptPassword = (encryptedPassword) => {
         if (!encryptedPassword) return null;
         const bytes = CryptoJS.AES.decrypt(encryptedPassword, CRYPTO_SECRET);
         const decrypted = bytes.toString(CryptoJS.enc.Utf8);
-
-        // If decryption results in an empty string, it often means the key was wrong 
-        // or the input wasn't encrypted with AES.
         if (!decrypted) {
             console.warn("Decryption resulted in empty string. Check Secret Keys.");
             return null; 

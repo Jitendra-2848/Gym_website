@@ -92,7 +92,7 @@ const login = async (req, res) => {
         console.error("Login Error:", e);
         res.status(500).json({
             success: false,
-            message: 'Server Error'
+            message: 'Invalid crendentials'
         });
     }
 };
