@@ -7,7 +7,7 @@ const PORT = process.env.PORT || 8000;
 
 // Connect to MongoDB and Start Server
 mongoose.connect(process.env.MONGO_URL, {
-    dbName: process.env.DB_NAME || 'sanatan_gym'
+    dbName: process.env.DB_NAME || 'gym'
 })
     .then(() => {
         console.log('DB Connected');
