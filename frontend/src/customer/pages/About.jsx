@@ -55,7 +55,7 @@ const About = () => {
 
               <h1 className="section-title text-white mb-4">
                 BUILDING CHAMPIONS
-                <span className="text-gradient block">SINCE 2012</span>
+                <span className="text-gradient block">SINCE 2024</span>
               </h1>
 
               <p className="text-gray-400 text-lg mb-4 leading-relaxed">

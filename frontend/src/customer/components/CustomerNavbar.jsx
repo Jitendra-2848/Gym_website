@@ -127,7 +127,7 @@ const Navbar = () => {
                   SANATAN
                 </h1>
                 <p className="text-[10px] md:text-xs text-primary-400 font-semibold tracking-widest">
-                  GYM &amp; FITNESS
+                  GYM &amp; YOGA
                 </p>
               </div>
             </Link>

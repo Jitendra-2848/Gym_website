@@ -17,7 +17,7 @@ const Footer = () => {
               </div>
               <div>
                 <h1 className="font-heading text-xl font-bold text-white">SANATAN</h1>
-                <p className="text-xs text-primary-400 font-semibold tracking-widest">GYM & FITNESS</p>
+                <p className="text-xs text-primary-400 font-semibold tracking-widest">GYM & YOGA</p>
               </div>
             </Link>
             <p className="text-gray-400 leading-relaxed mb-6">
