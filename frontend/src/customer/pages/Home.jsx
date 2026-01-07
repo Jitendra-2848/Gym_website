@@ -67,7 +67,7 @@ const Home = () => {
             <span className="w-2 h-2 bg-primary-400 rounded-full animate-pulse"></span>
 
             <span className="text-primary-300 font-medium text-sm">
-              Welcome to SANATAN GYM
+              Welcome to SANATAN GYM AND YOGA
             </span>
           </div>
 
@@ -165,7 +165,7 @@ rounded-full px-4 py-2 mb-6 overflow-hidden group"
               </h2>
 
               <p className="text-gray-400 text-lg leading-relaxed mb-8">
-                At SANATAN GYM, we believe fitness is not just about building muscles
+                At SANATAN GYM AND YOGA, we believe fitness is not just about building muscles
                 – it's about building a better version of yourself. Our
                 state-of-the-art facility, expert trainers, and supportive
                 community create the perfect environment for your

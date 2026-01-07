@@ -4,6 +4,13 @@ import { Link } from 'react-router-dom'
 import { Dumbbell, MapPin, Phone, Mail, Clock, Facebook, Instagram, Twitter, Youtube } from 'lucide-react'
 
 const Footer = () => {
+  const goToTop = () => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: "smooth",
+    });
+  };
   return (
     <footer className="bg-dark-300 border-t border-dark-100 pb-20 md:pb-0">
       {/* Main Footer */}
@@ -47,7 +54,7 @@ const Footer = () => {
                 { label: 'Login', path: '/login' },
               ].map((link) => (
                 <li key={link.path}>
-                  <Link to={link.path} className="text-gray-400 hover:text-primary-400 transition-colors flex items-center gap-2">
+                  <Link onClick={goToTop} to={link.path} className="text-gray-400 hover:text-primary-400 transition-colors flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-primary-500"></span>
                     {link.label}
                   </Link>
@@ -55,8 +62,6 @@ const Footer = () => {
               ))}
             </ul>
           </div>
-              <>
-              </>
           {/* Contact Info */}
           <div>
             <h3 className="font-heading text-lg font-bold text-white mb-6">CONTACT US</h3>
@@ -94,7 +99,7 @@ const Footer = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-gray-500 text-sm text-center md:text-left">
-              © {new Date().getFullYear()} Sanatan Gym. All rights reserved.
+              © {new Date().getFullYear()} SANATAN GYM AND YOGA. All rights reserved.
             </p>
           </div>
         </div>

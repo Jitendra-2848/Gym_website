@@ -72,7 +72,7 @@ const RenewalInvoicePreview = React.forwardRef(({ memberData, renewalData, photo
           <header className="flex justify-between items-start border-b-4 border-gray-900 pb-6 mb-8">
             <div>
               <h2 className="text-4xl font-black text-gray-900 tracking-tighter uppercase">
-                SANATAN GYM
+                SANATAN GYM AND YOGA
               </h2>
               <div className="mt-2 text-sm font-semibold text-gray-600 space-y-1">
                 <p>123, Temple Road, Gym City</p>
@@ -233,7 +233,7 @@ const RenewalInvoicePreview = React.forwardRef(({ memberData, renewalData, photo
 
           {/* Footer */}
           <footer className="mt-12 pt-6 border-t border-gray-300 text-center">
-            <p className="text-sm font-bold text-gray-800">Thank you for continuing with SANATAN GYM!</p>
+            <p className="text-sm font-bold text-gray-800">Thank you for continuing with SANATAN GYM AND YOGA!</p>
             <p className="text-xs text-gray-500 mt-1">Computer generated invoice.</p>
           </footer>
         </div>

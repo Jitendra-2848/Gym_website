@@ -5,6 +5,7 @@ const MemberSchema = new mongoose.Schema({
     password: { type: String, required: true },
     name: { type: String, required: true },
     email: { type: String, default: '' },
+    Date_Of_Birth:{type:Date,required:true},
     profile_pic: { type: String, default: '' },
     
     // Membership Details

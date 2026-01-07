@@ -5,9 +5,8 @@ const getProfile = async (req, res) => {
         if (req.user.role === 'admin') {
             return res.status(200).json({ success: true, data: { name: 'Admin', role: 'admin' } });
         }
-        const member = await Member.findById(req.user.id).select('-password -password -createdBy -createdAt -amount_paid -discount -_id -updatedAt -__v');
+        const member = await Member.findById(req.user.id).select(' -password -createdBy -createdAt -amount_paid -discount -_id -updatedAt -__v');
         if (!member) return res.status(404).json({ success: false, message: 'User not found' });
-
         // --- Date Calculation ---
         const now = new Date();
         const end = new Date(member.end_date);

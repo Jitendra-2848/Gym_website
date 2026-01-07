@@ -33,10 +33,10 @@ const getDaysLeft = (endDate) => {
 };
 const addMember = async (req, res) => {
     try {
-        const { name, mobile, email, startDate, duration, discount, totalAmount, focus_note, profile_pic } = req.body;
+        const { name, mobile,Date_Of_Birth, email, startDate, duration, discount, totalAmount, focus_note, profile_pic } = req.body;
 
         // ========== REQUIRED FIELDS ==========
-        if (!name || !mobile || !duration || !totalAmount) {
+        if (!name || !mobile || !duration || !totalAmount || !Date_Of_Birth) {
             return res.status(400).json({ success: false, message: 'Missing required fields' });
         }
 
@@ -132,6 +132,7 @@ const addMember = async (req, res) => {
             email: sanitize(email || ''),
             password: hashedPassword,
             profile_pic: req.fileUrl || profile_pic || '',
+            Date_Of_Birth:Date_Of_Birth,
             start_date: parsedStartDate,
             end_date: endDate,
             duration_months: durationNum,
@@ -251,6 +252,7 @@ const updateuser = async (req, res) => {
             end_date,
             duration_months,
             focus_note,
+            Date_Of_Birth,
             discount = 0,
             iscancel,
             encryptedPassword,
@@ -370,6 +372,7 @@ const updateuser = async (req, res) => {
             start_date: sDate,
             end_date: eDate,
             discount,
+            Date_Of_Birth,
             duration_months: newDuration,
             focus_note: focus_note !== undefined ? focus_note.trim() : member.focus_note,
             profile_pic: photoUrl,

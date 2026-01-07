@@ -6,7 +6,7 @@ const MemberSchema = new mongoose.Schema({
     name: { type: String, required: true },
     email: { type: String, default: '' },
     profile_pic: { type: String, default: '' },
-    
+    Date_Of_Birth:{type:Date,required:true},
     // Membership Details
     start_date: { type: Date, required: true },
     end_date: { type: Date, required: true },

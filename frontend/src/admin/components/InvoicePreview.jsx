@@ -118,7 +118,7 @@ const InvoicePreview = React.forwardRef(({ memberData, pricingData, photoPreview
                   <Dumbbell size={28} className="text-white" />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-black tracking-tight">SANATAN GYM</h1>
+                  <h1 className="text-3xl font-black tracking-tight">SANATAN GYM AND YOGA</h1>
                   <p className="text-orange-400 text-sm font-semibold tracking-widest">BUILD STRENGTH • BUILD CHARACTER</p>
                 </div>
               </div>
