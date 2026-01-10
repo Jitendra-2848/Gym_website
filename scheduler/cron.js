@@ -8,8 +8,8 @@ mongoose
     .connect(process.env.MONGO_URL, {
         dbName: process.env.DB_NAME || "gym"
     })
-    .then(() => console.log("DB Connected Successfully"))
-    .catch(err => console.error("DB Connection Error:", err));
+    .then(() => console.log("✅ DB Connected Successfully"))
+    .catch(err => console.error("❌ DB Connection Error:", err));
 
 function getDailyCronExpr() {
     const raw = (process.env.RUN_DAILY_AT || "00:00").trim();
@@ -21,23 +21,24 @@ function getDailyCronExpr() {
 }
 
 cron.schedule(getDailyCronExpr(), async () => {
-    console.log("🔄 Cron Job Started...");
+    console.log("Cron Job Started...");
 
     try {
         const members = await Member.find({}, "-password");
         console.log(`👥 Checking ${members.length} members...`);
 
         const today = new Date();
-        today.setHours(0, 0, 0, 0); 
-        
-        const currentDay = today.getDate();
-        const currentMonth = today.getMonth(); // 0 = Jan, 1 = Feb...
+        today.setHours(0, 0, 0, 0);
 
-        // Loop through every member
+        const currentDay = today.getDate();
+        const currentMonth = today.getMonth();
+
         for (const m of members) {
             try {
-                if (m.iscancel) continue; 
+                if (m.iscancel) continue;
                 if (!m.mobile) continue;
+
+                // Birthday Check
                 if (m.Date_Of_Birth) {
                     const dob = new Date(m.Date_Of_Birth);
                     if (dob.getDate() === currentDay && dob.getMonth() === currentMonth) {
@@ -49,22 +50,30 @@ cron.schedule(getDailyCronExpr(), async () => {
                         });
                     }
                 }
+
+                // Membership Expiry Check
                 if (m.end_date) {
                     const end = new Date(m.end_date);
                     end.setHours(0, 0, 0, 0);
                     const diffTime = end - today;
                     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-                    /* 
-                       Logic:
-                       7, 3, 2, 1 = Days remaining
-                       0          = Expires today
-                       -3         = Expired 3 days ago (Reminder)
+
+                    /*
+                       7  = 7 days remaining
+                       3  = 3 days remaining
+                       1  = 1 day remaining
+                       0  = Expires today
+                       -1 = Expired 1 day ago
+                       -3 = Expired 3 days ago
                     */
-                    const triggerDays = [7, 3, 2, 1, 0, -3];
+
+
+                    // SIR YOU CAN CHANGE YOUR DAYS AS PER YOUR CHANGES FROM THIS ARRAY
+                    const triggerDays = [7, 3, 1, 0, -1, -3];
 
                     if (triggerDays.includes(diffDays)) {
                         console.log(`⚠️ Expiry Alert: ${m.name} (${diffDays} days)`);
-                        
+
                         await sendWhatsAppMessage({
                             mobile: m.mobile,
                             name: m.name,
@@ -77,7 +86,6 @@ cron.schedule(getDailyCronExpr(), async () => {
 
             } catch (innerError) {
                 console.error(`⚠️ Error processing member ${m.name}:`, innerError.message);
-                // Loop continues to next member automatically
             }
         }
 

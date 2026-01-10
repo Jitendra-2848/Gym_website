@@ -1,16 +1,18 @@
 const axios = require("axios");
+
 const TEMPLATES = {
-    BIRTHDAY: "happy_birthday_wish",          // Template for Birthday
-    EXPIRY_WARNING: "membership_expiry_warning", // For 7, 3, 2, 1 days left
-    EXPIRY_TODAY: "membership_expires_today",    // For 0 days left
-    EXPIRY_OVER: "membership_renewal_reminder"   // For -3 days (expired)
+    BIRTHDAY: "happy_birthday_wish",
+    EXPIRY_WARNING: "membership_expiry_warning",   // For 7, 3, 1 days left
+    EXPIRY_TODAY: "membership_expires_today",       // For 0 days left
+    EXPIRY_OVER: "membership_renewal_reminder"      // For -1, -3 days (expired)
 };
 
 const sendWhatsAppMessage = async ({ mobile, name, daysLeft, endDate, type }) => {
     const url = process.env.WHATSAPP_API_URL;
     const token = process.env.WHATSAPP_API_KEY;
+
     if (!url || !token) {
-        console.error(" Missing WhatsApp API URL or Token in .env");
+        console.error("Missing WhatsApp API URL or Token in .env");
         return;
     }
 
@@ -19,29 +21,36 @@ const sendWhatsAppMessage = async ({ mobile, name, daysLeft, endDate, type }) =>
 
     let templateName = "";
     let params = [];
+
+    //Birthday Template
     if (type === "birthday") {
         templateName = TEMPLATES.BIRTHDAY;
         params = [name];
     }
 
+    //Expiry Templates
     else if (type === "expiry") {
 
-        if (daysLeft > 0) {
-            // Case: 7, 3, 2, 1 days remaining
+        //Case: 7, 3, or 1 days remaining
+        if (daysLeft === 7 || daysLeft === 3 || daysLeft === 1) {
             templateName = TEMPLATES.EXPIRY_WARNING;
             params = [name, String(daysLeft), endDate];
         }
+
+        //Case: Expires TODAY (0 days)
         else if (daysLeft === 0) {
-            // Case: Expires Today
             templateName = TEMPLATES.EXPIRY_TODAY;
             params = [name, endDate];
         }
-        else if (daysLeft === -3) {
-            // Case: Expired 3 days ago
+
+        // Case: Already Expired (-1 or -3 days ago)
+        else if (daysLeft === -1 || daysLeft === -3) {
             templateName = TEMPLATES.EXPIRY_OVER;
             params = [name];
         }
     }
+
+    // If no valid template, skip
     if (!templateName) return;
 
     const payload = {
@@ -62,6 +71,7 @@ const sendWhatsAppMessage = async ({ mobile, name, daysLeft, endDate, type }) =>
             ]
         }
     };
+
     try {
         await axios.post(url, payload, {
             headers: {
@@ -69,9 +79,8 @@ const sendWhatsAppMessage = async ({ mobile, name, daysLeft, endDate, type }) =>
                 "Content-Type": "application/json"
             }
         });
-        console.log(`WhatsApp Sent | To: ${name} | Type: ${templateName}`);
+        console.log(`WhatsApp Sent | To: ${name} | Template: ${templateName}`);
     } catch (err) {
-        // Log the error but don't crash the app 
         console.error(
             `WhatsApp Failed | To: ${name} | Error:`,
             err.response?.data?.error?.message || err.message
