@@ -37,19 +37,25 @@ cron.schedule(getDailyCronExpr(), async () => {
             try {
                 if (m.iscancel) continue;
                 if (!m.mobile) continue;
-
-                // Birthday Check
                 if (m.Date_Of_Birth) {
-                    const dob = new Date(m.Date_Of_Birth);
-                    if (dob.getDate() === currentDay && dob.getMonth() === currentMonth) {
-                        console.log(`🎂 Birthday detected: ${m.name}`);
-                        await sendWhatsAppMessage({
-                            mobile: m.mobile,
-                            name: m.name,
-                            type: "birthday"
-                        });
+                    const end = new Date(m.end_date);
+                    end.setHours(0, 0, 0, 0);
+                    //checking if the user plan is already expired then skip it
+                    if (end >= today) {
+                        const dob = new Date(m.Date_Of_Birth);
+                        if (dob.getDate() === currentDay && dob.getMonth() === currentMonth) {
+                            console.log(`🎂 Birthday detected: ${m.name}`);
+                            await sendWhatsAppMessage({
+                                mobile: m.mobile,
+                                name: m.name,
+                                type: "birthday"
+                            });
+                        }
+                    } else {
+                        console.log(`Skipping birthday for ${m.name} because plan expired`);
                     }
                 }
+
 
                 // Membership Expiry Check
                 if (m.end_date) {
