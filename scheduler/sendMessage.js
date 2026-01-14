@@ -2,7 +2,7 @@ const axios = require("axios");
 
 const TEMPLATES = {
     BIRTHDAY: "happy_birthday_wish",
-    EXPIRY_WARNING: "membership_expiry_warning",   // For 7, 3, 1 days left
+    EXPIRY_WARNING: "membership_expiry_warning",    // For 7, 3, 1 days left
     EXPIRY_TODAY: "membership_expires_today",       // For 0 days left
     EXPIRY_OVER: "membership_renewal_reminder"      // For -1, -3 days (expired)
 };

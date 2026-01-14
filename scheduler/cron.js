@@ -2,7 +2,7 @@ const cron = require("node-cron");
 const mongoose = require("mongoose");
 const Member = require("./Member");
 const sendWhatsAppMessage = require("./sendMessage");
-require("dotenv").config({ path: "./.env.prod" });
+require("dotenv").config({ path: "./.env.local" });
 
 mongoose
     .connect(process.env.MONGO_URL, {
@@ -68,7 +68,7 @@ cron.schedule(getDailyCronExpr(), async () => {
                     */
 
 
-                    // SIR YOU CAN CHANGE YOUR DAYS AS PER YOUR CHANGES FROM THIS ARRAY
+                    // YOU CAN CHANGE YOUR DAYS AS PER YOUR CHANGES FROM THIS ARRAY
                     const triggerDays = [7, 3, 1, 0, -1, -3];
 
                     if (triggerDays.includes(diffDays)) {
