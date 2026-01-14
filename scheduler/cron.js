@@ -41,7 +41,7 @@ cron.schedule(getDailyCronExpr(), async () => {
                     const end = new Date(m.end_date);
                     end.setHours(0, 0, 0, 0);
                     //checking if the user plan is already expired then skip it
-                    if (end >= today) {
+                    if (end - today >= -3 ) {
                         const dob = new Date(m.Date_Of_Birth);
                         if (dob.getDate() === currentDay && dob.getMonth() === currentMonth) {
                             console.log(`🎂 Birthday detected: ${m.name}`);
